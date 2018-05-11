@@ -6,4 +6,5 @@
 // tslint:disable-next-line:variable-name
 export const Strings = {
    "error_generic": "error_generic",
+   "image_caption_response": "image_caption_response",
 };

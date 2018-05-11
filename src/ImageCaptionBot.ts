@@ -26,8 +26,30 @@ export class ImageCaptionBot extends builder.UniversalBot {
 
         this.visionApi = botSettings.visionApi as vision.VisionApi;
 
-        this.dialog(consts.DialogId.Root, (session) => {
-            session.send("Hi!");
-        })
+        this.dialog(consts.DialogId.Root, this._onMessage.bind(this));
+    }
+
+    private async _onMessage(session: builder.Session) {
+        const imageUrl = this.getImageUrl(session.message);
+
+        if (imageUrl) {
+            try {
+                let describeResult = await this.visionApi.describeImageAsync(imageUrl);
+                session.send(Strings.image_caption_response, describeResult.description.captions[0].text);
+            } catch (e) {
+                session.send("There was a problem analyzing the image: " + e.message);
+            }
+        } else {
+            session.send("Hi! Send me an image or an image url, and I'll tell you what it is.");
+        }
+    }
+
+    private getImageUrl(message: builder.IMessage): string {
+        const fileAttachment = message.attachments.find(item => item.contentType === "application/vnd.microsoft.teams.file.download.info");
+        if (fileAttachment) {
+            return fileAttachment.content.downloadUrl;
+        }
+
+        return message.text;
     }
 }

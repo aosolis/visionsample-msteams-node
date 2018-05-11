@@ -40,7 +40,7 @@ export class VisionApi {
     {
     }
 
-    public async describeImageAsync(imageUrl: string, language: string, maxCandidates?:number): Promise<DescribeImageResult> {
+    public async describeImageAsync(imageUrl: string, language?: string, maxCandidates?:number): Promise<DescribeImageResult> {
         return new Promise<DescribeImageResult>((resolve, reject) => {
             let qsp: any = {
                 maxCandidates: maxCandidates || 1,

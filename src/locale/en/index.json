@@ -1,3 +1,4 @@
 {
-    "error_generic": "Sorry, I'm having issues."
+    "error_generic": "Sorry, I'm having issues.",
+    "image_caption_response": [ "I think that's %s.", "Hmm, that might be %s.", "That could be %s.", "Is that %s?" ]
 }
