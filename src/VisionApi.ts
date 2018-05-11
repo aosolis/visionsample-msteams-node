@@ -40,7 +40,7 @@ export class VisionApi {
     {
     }
 
-    public async describeImageAsync(imageUrl: string, language?: string, maxCandidates?:number): Promise<DescribeImageResult> {
+    public async describeImageByUrlAsync(imageUrl: string, language?: string, maxCandidates?:number): Promise<DescribeImageResult> {
         return new Promise<DescribeImageResult>((resolve, reject) => {
             let qsp: any = {
                 maxCandidates: maxCandidates || 1,
@@ -63,6 +63,32 @@ export class VisionApi {
                     reject(new Error(res.statusMessage));
                 } else {
                     resolve(body as DescribeImageResult);
+                }
+            });
+        });
+    }
+
+    public async describeImageBufferAsync(imageBuffer: Buffer, language?: string, maxCandidates?:number): Promise<DescribeImageResult> {
+        return new Promise<DescribeImageResult>((resolve, reject) => {
+            let qsp: any = {
+                maxCandidates: maxCandidates || 1,
+                language: language || "en",
+            };
+            let options = {
+                url: `https://${this.endpoint}/${describePath}?${querystring.stringify(qsp)}`,
+                headers: {
+                    "Ocp-Apim-Subscription-Key": this.accessKey,
+                    "Content-Type": "application/octet-stream",
+                },
+                body: imageBuffer,
+            };
+            request.post(options, (err, res: http.IncomingMessage, body) => {
+                if (err) {
+                    reject(err);
+                } else if (res.statusCode !== 200) {
+                    reject(new Error(res.statusMessage));
+                } else {
+                    resolve(JSON.parse(body) as DescribeImageResult);
                 }
             });
         });
