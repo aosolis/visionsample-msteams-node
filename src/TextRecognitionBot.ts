@@ -6,10 +6,10 @@ import * as vision from "./VisionApi";
 import { Strings } from "./locale/locale";
 
 // =========================================================
-// Image Caption Bot
+// Text Recognition Bot
 // =========================================================
 
-export class ImageCaptionBot extends builder.UniversalBot {
+export class TextRecognitionBot extends builder.UniversalBot {
 
     private visionApi: vision.VisionApi;
 
@@ -42,7 +42,7 @@ export class ImageCaptionBot extends builder.UniversalBot {
         if (inlineImageUrl) {
             // Image was attached as inline content
             this.returnImageCaptionAsync(session, async () => {
-                const buffer = await this.getInlineImageAttachmentAsync(inlineImageUrl, session);
+                let buffer = await this.getInlineImageAttachmentAsync(inlineImageUrl, session);
                 return await this.visionApi.describeImageBufferAsync(buffer);
             });
             return;
@@ -61,10 +61,10 @@ export class ImageCaptionBot extends builder.UniversalBot {
     // Return a caption for the image
     private async returnImageCaptionAsync(session: builder.Session, describeOperation: () => Promise<vision.DescribeImageResult>): Promise<void> {
         try {
-            const describeResult = await describeOperation();
+            let describeResult = await describeOperation();
             session.send(Strings.image_caption_response, describeResult.description.captions[0].text);
         } catch (e) {
-            session.send(Strings.analysis_error, (e.result && e.result.message) || e.message);
+            session.send(Strings.analysis_error, (e.result && e.result.reason) || e.message);
         }
     }
 
@@ -90,8 +90,8 @@ export class ImageCaptionBot extends builder.UniversalBot {
 
     // Downloads the image sent as an inline attachment.
     private async getInlineImageAttachmentAsync(contentUrl:string, session: builder.Session): Promise<Buffer> {
-        const connector = session.connector as builder.ChatConnector;
-        const accessToken = await new Promise<string>((resolve, reject) => {
+        let connector = session.connector as builder.ChatConnector;
+        let accessToken = await new Promise<string>((resolve, reject) => {
             connector.getAccessToken((err, accessToken) => {
                 if (err) {
                     reject(err);
@@ -101,7 +101,7 @@ export class ImageCaptionBot extends builder.UniversalBot {
             })
         });
         return await new Promise<Buffer>((resolve, reject) => {
-            const options = {
+            let options = {
                 url: contentUrl,
                 headers: {
                     "Authorization": `Bearer ${accessToken}`

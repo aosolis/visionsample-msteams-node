@@ -40,6 +40,7 @@ export class VisionApi {
     {
     }
 
+    // Get a description of the image at the given url
     public async describeImageByUrlAsync(imageUrl: string, language?: string, maxCandidates?:number): Promise<DescribeImageResult> {
         return new Promise<DescribeImageResult>((resolve, reject) => {
             let qsp: any = {
@@ -60,7 +61,14 @@ export class VisionApi {
                 if (err) {
                     reject(err);
                 } else if (res.statusCode !== 200) {
-                    reject(new Error(res.statusMessage));
+                    let e = new Error(res.statusMessage) as any;
+                    e.statusCode = res.statusCode;
+                    try {
+                        e.result = JSON.parse(body);
+                    } catch (parseError) {
+                        console.error("Error parsing body: " + parseError);
+                    }
+                    reject(e);
                 } else {
                     resolve(body as DescribeImageResult);
                 }
@@ -68,6 +76,7 @@ export class VisionApi {
         });
     }
 
+    // Get a description of the given image at the given url
     public async describeImageBufferAsync(imageBuffer: Buffer, language?: string, maxCandidates?:number): Promise<DescribeImageResult> {
         return new Promise<DescribeImageResult>((resolve, reject) => {
             let qsp: any = {
@@ -86,7 +95,14 @@ export class VisionApi {
                 if (err) {
                     reject(err);
                 } else if (res.statusCode !== 200) {
-                    reject(new Error(res.statusMessage));
+                    let e = new Error(res.statusMessage) as any;
+                    e.statusCode = res.statusCode;
+                    try {
+                        e.result = JSON.parse(body);
+                    } catch (parseError) {
+                        console.error("Error parsing body: " + parseError);
+                    }
+                    reject(e);
                 } else {
                     resolve(JSON.parse(body) as DescribeImageResult);
                 }
