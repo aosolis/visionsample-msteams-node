@@ -37,10 +37,10 @@ export class ImageCaptionBot extends builder.UniversalBot {
                 let describeResult = await this.visionApi.describeImageAsync(imageUrl);
                 session.send(Strings.image_caption_response, describeResult.description.captions[0].text);
             } catch (e) {
-                session.send("There was a problem analyzing the image: " + e.message);
+                session.send(Strings.analysis_error, e.message);
             }
         } else {
-            session.send("Hi! Send me an image or an image url, and I'll tell you what it is.");
+            session.send(Strings.help_message);
         }
     }
 

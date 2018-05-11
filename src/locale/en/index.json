@@ -1,4 +1,6 @@
 {
     "error_generic": "Sorry, I'm having issues.",
-    "image_caption_response": [ "I think that's %s.", "Hmm, that might be %s.", "That could be %s.", "Is that %s?" ]
+    "image_caption_response": [ "I think that's %s.", "Hmm, that might be %s.", "That could be %s.", "Is that %s?" ],
+    "help_message": [ "Hi! Send me an image or an image url, and I'll tell you what it is." ],
+    "analysis_error": "There was a problem analyzing the image: %s"
 }
