@@ -1,0 +1,45 @@
+﻿{
+  "$schema": "https://statics.teams.microsoft.com/sdk/v1.2/manifest/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.2",
+  "version": "1.0",
+  "id": "8760ba8b-c162-42cd-adf3-2a83c01ae221",
+  "packageName": "com.aosolis.imagecaption",
+  "developer": {
+    "name": "Adrian Solis",
+    "websiteUrl": "https://bing.com/news",
+    "privacyUrl": "https://privacy.microsoft.com/PrivacyStatement",
+    "termsOfUseUrl": "https://www.microsoft.com/en-us/servicesagreement/"
+  },
+  "name": {
+    "short": "Image Caption"
+  },
+  "description": {
+    "short": "Returns captions for images sent to it",
+    "full": "Returns captions for images sent to it"
+  },
+  "icons": {
+    "outline": "bing_outline20.png",
+    "color": "bing_color96.png"
+  },
+  "accentColor": "#008272",
+  "configurableTabs": [
+  ],
+  "staticTabs": [
+  ],
+  "bots": [
+    {
+      "botId": "8337979f-b2da-408f-969b-f6abc6cfcebd",
+      "scopes": [
+        "personal"
+      ]
+    }
+  ],
+  "composeExtensions": [
+  ],
+  "permissions": [
+  ],
+  "validDomains": [
+    "imagecaption-msteams.azurewebsites.net",
+    "*.ngrok.io"
+  ]
+}
