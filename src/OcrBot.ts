@@ -75,12 +75,16 @@ export class OcrBot extends builder.UniversalBot {
 
         if (session.message.text) {
             // Try the text as an image URL
-            this.returnRecognizedTextAsync(session, () => {
-                return this.visionApi.runOcrAsync(session.message.text);
-            });
-        } else {
-            session.send(Strings.help_message);
+            let urlMatch = session.message.text.match(consts.urlRegExp);
+            if (urlMatch) {
+                this.returnRecognizedTextAsync(session, () => {
+                    return this.visionApi.runOcrAsync(urlMatch[0]);
+                });
+                return;
+            }
         }
+        
+        session.send(Strings.ocr_help);
     }
 
     // Handle incoming invokes

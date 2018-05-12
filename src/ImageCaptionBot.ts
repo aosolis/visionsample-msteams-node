@@ -48,7 +48,7 @@ export class ImageCaptionBot extends builder.UniversalBot {
         this.visionApi = botSettings.visionApi as vision.VisionApi;
 
         this.use(new msteams.StripBotAtMentions());
-        
+
         this.dialog(consts.DialogId.Root, this._onMessage.bind(this));
     }
 
@@ -75,12 +75,16 @@ export class ImageCaptionBot extends builder.UniversalBot {
 
         if (session.message.text) {
             // Try the text as an image URL
-            this.returnImageCaptionAsync(session, () => {
-                return this.visionApi.describeImageAsync(session.message.text.trim());
-            });
-        } else {
-            session.send(Strings.help_message);
+            let urlMatch = session.message.text.match(consts.urlRegExp);
+            if (urlMatch) {
+                this.returnImageCaptionAsync(session, () => {
+                    return this.visionApi.describeImageAsync(urlMatch[0]);
+                });
+                return;
+            }
         }
+        
+        session.send(Strings.image_caption_help);
     }
 
     // Return a caption for the image

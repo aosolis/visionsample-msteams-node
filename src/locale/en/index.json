@@ -1,8 +1,9 @@
 {
     "error_generic": "Sorry, I'm having issues.",
     "image_caption_response": [ "I think that's %s.", "Hmm, that might be %s.", "That could be %s.", "Is that %s?", "That looks like %s." ],
-    "help_message": [ "Hi! Send me a picture or a picture url, and I'll tell you what it is." ],
+    "image_caption_help": [ "Hi! Send me a picture or a link to one, and I'll tell you what it is." ],
     "analysis_error": "There was a problem analyzing the image: %s",
+    "ocr_help": [ "Hi! Send me a picture or a link to one, and I'll send you a file with the text that I recognized." ],
     "ocr_result_expired": "This result has expired. Send me the picture again, and I'll rescan it.",
     "ocr_upload_error": "There was an error uploading the file: %s",
     "ocr_file_description": "Text recognized from the image",

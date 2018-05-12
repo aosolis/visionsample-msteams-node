@@ -37,3 +37,5 @@ export const TelemetryEvent = {
     UserActivity: "UserActivity",
     BotActivity: "BotActivity",
 };
+
+export const urlRegExp = /https?:\/\/\S*/i;
