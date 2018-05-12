@@ -2,33 +2,33 @@
   "$schema": "https://statics.teams.microsoft.com/sdk/v1.2/manifest/MicrosoftTeams.schema.json",
   "manifestVersion": "1.2",
   "version": "1.0",
-  "id": "8760ba8b-c162-42cd-adf3-2a83c01ae221",
-  "packageName": "com.aosolis.imagecaption",
+  "id": "5bef59e3-026a-429c-8161-b197313014d1",
+  "packageName": "com.microsoft.aosolis.ocrbot",
   "developer": {
     "name": "Adrian Solis",
-    "websiteUrl": "https://bing.com/news",
+    "websiteUrl": "https://azure.microsoft.com/en-us/services/cognitive-services/computer-vision/",
     "privacyUrl": "https://privacy.microsoft.com/PrivacyStatement",
     "termsOfUseUrl": "https://www.microsoft.com/en-us/servicesagreement/"
   },
   "name": {
-    "short": "Image Caption"
+    "short": "OCR Bot"
   },
   "description": {
-    "short": "Returns captions for images sent to it",
-    "full": "Returns captions for images sent to it"
+    "short": "Recognizes text in images that you send to it",
+    "full": "Recognizes text in images that you send to it"
   },
   "icons": {
-    "outline": "bing_outline20.png",
-    "color": "bing_color96.png"
+    "outline": "cognitiveservicescomputervision.png",
+    "color": "cognitiveservicescomputervision.png"
   },
-  "accentColor": "#008272",
+  "accentColor": "#1267AE",
   "configurableTabs": [
   ],
   "staticTabs": [
   ],
   "bots": [
     {
-      "botId": "8337979f-b2da-408f-969b-f6abc6cfcebd",
+      "botId": "5bef59e3-026a-429c-8161-b197313014d1",
       "scopes": [
         "personal"
       ]
@@ -39,7 +39,7 @@
   "permissions": [
   ],
   "validDomains": [
-    "imagecaption-msteams.azurewebsites.net",
+    "visionsample-msteams.azurewebsites.net",
     "*.ngrok.io"
   ]
 }

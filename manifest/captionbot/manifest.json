@@ -1,0 +1,46 @@
+﻿{
+  "$schema": "https://statics.teams.microsoft.com/sdk/v1.2/manifest/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.2",
+  "version": "1.0",
+  "id": "45be6940-7ca9-4bdc-9e7f-188e71791c69",
+  "packageName": "com.microsoft.aosolis.captionbot",
+  "developer": {
+    "name": "Adrian Solis",
+    "websiteUrl": "https://azure.microsoft.com/en-us/services/cognitive-services/computer-vision/",
+    "privacyUrl": "https://privacy.microsoft.com/PrivacyStatement",
+    "termsOfUseUrl": "https://www.microsoft.com/en-us/servicesagreement/"
+  },
+  "name": {
+    "short": "CaptionBot"
+  },
+  "description": {
+    "short": "Send it a picture, and it will tell you what it sees",
+    "full": "Send it a picture, and it will tell you what it sees"
+  },
+  "icons": {
+    "outline": "cognitiveservicescomputervision.png",
+    "color": "cognitiveservicescomputervision.png"
+  },
+  "accentColor": "#1267AE",
+  "configurableTabs": [
+  ],
+  "staticTabs": [
+  ],
+  "bots": [
+    {
+      "botId": "45be6940-7ca9-4bdc-9e7f-188e71791c69",
+      "scopes": [
+        "personal",
+        "team"
+      ]
+    }
+  ],
+  "composeExtensions": [
+  ],
+  "permissions": [
+  ],
+  "validDomains": [
+    "visionsample-msteams.azurewebsites.net",
+    "*.ngrok.io"
+  ]
+}

@@ -1,7 +1,7 @@
 {
-  "name": "imagecaption-msteams",
+  "name": "visionsample-msteams",
   "version": "0.0.1",
-  "description": "Image Captioner",
+  "description": "Sample bots that exercise bot file APIs in Microsoft Teams",
   "author": {
     "name": "Adrian Solis"
   },
