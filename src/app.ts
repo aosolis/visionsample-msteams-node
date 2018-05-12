@@ -7,10 +7,12 @@ let http = require("http");
 let path = require("path");
 let logger = require("morgan");
 let config = require("config");
+import * as botbuilder from "botbuilder";
 import * as msteams from "botbuilder-teams";
 import * as winston from "winston";
 import { VisionApi } from "./VisionApi";
 import { ImageCaptionBot } from "./ImageCaptionBot";
+import { OcrBot } from "./OcrBot";
 import { NullBotStorage } from "./storage/NullBotStorage";
 import * as utils from "./utils";
 
@@ -37,10 +39,10 @@ let connector = new msteams.TeamsChatConnector({
     appPassword: config.get("bot.appPassword"),
 });
 let botSettings = {
-    storage: new NullBotStorage(),
+    storage: new botbuilder.MemoryBotStorage(),
     visionApi: new VisionApi(config.get("vision.endpoint"), config.get("vision.accessKey")),
 };
-let bot = new ImageCaptionBot(connector, botSettings);
+let bot = new OcrBot(connector, botSettings);
 
 // Log bot errors
 bot.on("error", (error: Error) => {
