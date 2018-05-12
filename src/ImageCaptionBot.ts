@@ -33,7 +33,7 @@ export class ImageCaptionBot extends builder.UniversalBot {
         if (fileUrl) {
             // Image was attached as a file
             this.returnImageCaptionAsync(session, () => {
-                return this.visionApi.describeImageByUrlAsync(fileUrl);
+                return this.visionApi.describeImageAsync(fileUrl);
             });
             return;
         }
@@ -43,7 +43,7 @@ export class ImageCaptionBot extends builder.UniversalBot {
             // Image was attached as inline content
             this.returnImageCaptionAsync(session, async () => {
                 const buffer = await this.getInlineImageAttachmentAsync(inlineImageUrl, session);
-                return await this.visionApi.describeImageBufferAsync(buffer);
+                return await this.visionApi.describeImageAsync(buffer);
             });
             return;
         }
@@ -51,7 +51,7 @@ export class ImageCaptionBot extends builder.UniversalBot {
         if (session.message.text) {
             // Try the text as an image URL
             this.returnImageCaptionAsync(session, () => {
-                return this.visionApi.describeImageByUrlAsync(session.message.text);
+                return this.visionApi.describeImageAsync(session.message.text.trim());
             });
         } else {
             session.send(Strings.help_message);

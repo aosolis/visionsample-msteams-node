@@ -40,23 +40,28 @@ export class VisionApi {
     {
     }
 
-    // Get a description of the image at the given url
-    public async describeImageByUrlAsync(imageUrl: string, language?: string, maxCandidates?:number): Promise<DescribeImageResult> {
+    // Get a description of the image
+    public async describeImageAsync(image: string|Buffer, language?: string, maxCandidates?:number): Promise<DescribeImageResult> {
         return new Promise<DescribeImageResult>((resolve, reject) => {
             let qsp: any = {
                 maxCandidates: maxCandidates || 1,
                 language: language || "en",
             };
-            let options = {
+            let options: request.OptionsWithUrl = {
                 url: `https://${this.endpoint}/${describePath}?${querystring.stringify(qsp)}`,
                 headers: {
                     "Ocp-Apim-Subscription-Key": this.accessKey
                 },
-                body: {
-                    url: imageUrl,
-                },
-                json: true,
             };
+
+            if (typeof(image) === "string") {
+                options.body = { url: image };
+                options.json = true;
+            } else {
+                options.headers["Content-Type"] = "application/octet-stream";
+                options.body = image;
+            }
+
             request.post(options, (err, res: http.IncomingMessage, body) => {
                 if (err) {
                     reject(err);
@@ -71,40 +76,6 @@ export class VisionApi {
                     reject(e);
                 } else {
                     resolve(body as DescribeImageResult);
-                }
-            });
-        });
-    }
-
-    // Get a description of the given image at the given url
-    public async describeImageBufferAsync(imageBuffer: Buffer, language?: string, maxCandidates?:number): Promise<DescribeImageResult> {
-        return new Promise<DescribeImageResult>((resolve, reject) => {
-            let qsp: any = {
-                maxCandidates: maxCandidates || 1,
-                language: language || "en",
-            };
-            let options = {
-                url: `https://${this.endpoint}/${describePath}?${querystring.stringify(qsp)}`,
-                headers: {
-                    "Ocp-Apim-Subscription-Key": this.accessKey,
-                    "Content-Type": "application/octet-stream",
-                },
-                body: imageBuffer,
-            };
-            request.post(options, (err, res: http.IncomingMessage, body) => {
-                if (err) {
-                    reject(err);
-                } else if (res.statusCode !== 200) {
-                    let e = new Error(res.statusMessage) as any;
-                    e.statusCode = res.statusCode;
-                    try {
-                        e.result = JSON.parse(body);
-                    } catch (parseError) {
-                        console.error("Error parsing body: " + parseError);
-                    }
-                    reject(e);
-                } else {
-                    resolve(JSON.parse(body) as DescribeImageResult);
                 }
             });
         });
