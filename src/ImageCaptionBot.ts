@@ -24,6 +24,7 @@
 import * as http from "http";
 import * as request from "request";
 import * as builder from "botbuilder";
+import * as msteams from "botbuilder-teams";
 import * as consts from "./constants";
 import * as utils from "./utils";
 import * as vision from "./VisionApi";
@@ -46,6 +47,8 @@ export class ImageCaptionBot extends builder.UniversalBot {
 
         this.visionApi = botSettings.visionApi as vision.VisionApi;
 
+        this.use(new msteams.StripBotAtMentions());
+        
         this.dialog(consts.DialogId.Root, this._onMessage.bind(this));
     }
 
