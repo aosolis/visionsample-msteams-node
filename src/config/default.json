@@ -1,15 +1,21 @@
 {
     "app": {
-        "baseUri": "https://translator-msteams.azurewebsites.net",
+        "baseUri": "<uri>",
         "instrumentationKey": ""
     },
     "captionBot": {
         "appId": "8d03718b-3c57-425d-ae69-c92f29b0327e",
-        "appPassword": "<secret>"
+        "appPassword": "<secret>",
+        "storage": "null"
     },
     "ocrBot": {
         "appId": "8d03718b-3c57-425d-ae69-c92f29b0327e",
-        "appPassword": "<secret>"
+        "appPassword": "<secret>",
+        "storage": "memory",
+        "mongoDb": {
+            "connectionString": "<secret>",
+            "collectionName": "OcrBot"
+        }
     },
     "vision": {
         "endpoint": "westus.api.cognitive.microsoft.com",

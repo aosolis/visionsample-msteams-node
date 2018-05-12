@@ -23,16 +23,16 @@
 
 import * as builder from "botbuilder";
 
-/** Replacable storage system used by UniversalBot. */
-export class NullBotStorage implements builder.IBotStorage {
+/** Replacable storage system. */
+export interface IBotExtendedStorage extends builder.IBotStorage {
 
-    // Reads in data from storage
-    public getData(context: builder.IBotStorageContext, callback: (err: Error, data: builder.IBotStorageData) => void): void {
-        callback(null, {});
-    }
+    /** Reads in user data from storage based on AAD object id. */
+    getUserDataByAadObjectIdAsync(aadObjectId: string): Promise<any>;
 
-    // Writes out data from storage
-    public saveData(context: builder.IBotStorageContext, data: builder.IBotStorageData, callback?: (err: Error) => void): void {
-        callback(null);
-    }
+    /** Gets the AAD object id associated with the user data bag. */
+    getAAdObjectId(userData: any): string;
+
+    /** Sets the AAD object id associated with the user data bag. */
+    setAAdObjectId(userData: any, aadObjectId: string): void;
+
 }

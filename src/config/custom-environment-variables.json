@@ -5,11 +5,19 @@
     },
     "captionBot": {
         "appId": "CAPTION_MICROSOFT_APP_ID",
-        "appPassword": "CAPTION_MICROSOFT_APP_PASSWORD"
+        "appPassword": "CAPTION_MICROSOFT_APP_PASSWORD",
+        "storage": "CAPTION_BOTSTORAGE",
+        "mongoDb": {
+            "connectionString": "MONGODB_CONNECTION_STRING"
+        }
     },
     "ocrBot": {
         "appId": "OCR_MICROSOFT_APP_ID",
-        "appPassword": "OCR_MICROSOFT_APP_PASSWORD"
+        "appPassword": "OCR_MICROSOFT_APP_PASSWORD",
+        "storage": "OCR_BOTSTORAGE",
+        "mongoDb": {
+            "connectionString": "MONGODB_CONNECTION_STRING"
+        }
     },
     "vision": {
         "endpoint": "VISION_ENDPOINT",

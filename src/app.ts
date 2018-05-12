@@ -13,7 +13,7 @@ import * as winston from "winston";
 import { VisionApi } from "./VisionApi";
 import { ImageCaptionBot } from "./ImageCaptionBot";
 import { OcrBot } from "./OcrBot";
-import { NullBotStorage } from "./storage/NullBotStorage";
+import * as storage from "./storage";
 import * as utils from "./utils";
 
 // Configure instrumentation
@@ -39,7 +39,7 @@ let captionBotConnector = new msteams.TeamsChatConnector({
     appPassword: config.get("captionBot.appPassword"),
 });
 let captionBotSettings = {
-    storage: new NullBotStorage(),
+    storage: new storage.NullBotStorage(),
     visionApi: new VisionApi(config.get("vision.endpoint"), config.get("vision.accessKey")),
 };
 let captionBot = new ImageCaptionBot(captionBotConnector, captionBotSettings);
@@ -54,7 +54,7 @@ let ocrBotConnector = new msteams.TeamsChatConnector({
     appPassword: config.get("ocrBot.appPassword"),
 });
 let ocrBotSettings = {
-    storage: new botbuilder.MemoryBotStorage(),
+    storage: utils.createBotStorage(config.get("ocrBot")),
     visionApi: new VisionApi(config.get("vision.endpoint"), config.get("vision.accessKey")),
 };
 let ocrBot = new OcrBot(ocrBotConnector, ocrBotSettings);

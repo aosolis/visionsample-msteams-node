@@ -4,3 +4,4 @@ export * from "./ApplicationInsightsTransport";
 export * from "./MessageUtils";
 export * from "./TelemetryUtils";
 export * from "./StripQueryFromTelemetryUrls";
+export * from "./BotStorageUtils";
