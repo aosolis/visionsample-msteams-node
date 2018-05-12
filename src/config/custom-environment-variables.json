@@ -3,9 +3,13 @@
         "baseUri": "APP_BASE_URI",
         "instrumentationKey": "APPINSIGHTS_INSTRUMENTATIONKEY"
     },
-    "bot": {
-        "appId": "MICROSOFT_APP_ID",
-        "appPassword": "MICROSOFT_APP_PASSWORD"
+    "captionBot": {
+        "appId": "CAPTION_MICROSOFT_APP_ID",
+        "appPassword": "CAPTION_MICROSOFT_APP_PASSWORD"
+    },
+    "ocrBot": {
+        "appId": "OCR_MICROSOFT_APP_ID",
+        "appPassword": "OCR_MICROSOFT_APP_PASSWORD"
     },
     "vision": {
         "endpoint": "VISION_ENDPOINT",

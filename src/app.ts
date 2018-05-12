@@ -33,24 +33,35 @@ app.use(logger("dev"));
 app.use(express.static(path.join(__dirname, "../../public")));
 app.use(bodyParser.json());
 
-// Create chat bot
-let connector = new msteams.TeamsChatConnector({
-    appId: config.get("bot.appId"),
-    appPassword: config.get("bot.appPassword"),
+// Create caption bot
+let captionBotConnector = new msteams.TeamsChatConnector({
+    appId: config.get("captionBot.appId"),
+    appPassword: config.get("captionBot.appPassword"),
 });
-let botSettings = {
+let captionBotSettings = {
+    storage: new NullBotStorage(),
+    visionApi: new VisionApi(config.get("vision.endpoint"), config.get("vision.accessKey")),
+};
+let captionBot = new ImageCaptionBot(captionBotConnector, captionBotSettings);
+captionBot.on("error", (error: Error) => {
+    winston.error(error.message, error);
+});
+app.post("/caption/messages", captionBotConnector.listen());
+
+// Create OCR bot
+let ocrBotConnector = new msteams.TeamsChatConnector({
+    appId: config.get("ocrBot.appId"),
+    appPassword: config.get("ocrBot.appPassword"),
+});
+let ocrBotSettings = {
     storage: new botbuilder.MemoryBotStorage(),
     visionApi: new VisionApi(config.get("vision.endpoint"), config.get("vision.accessKey")),
 };
-let bot = new OcrBot(connector, botSettings);
-
-// Log bot errors
-bot.on("error", (error: Error) => {
+let ocrBot = new OcrBot(ocrBotConnector, ocrBotSettings);
+ocrBot.on("error", (error: Error) => {
     winston.error(error.message, error);
 });
-
-// Configure bot routes
-app.post("/api/messages", connector.listen());
+app.post("/ocr/messages", ocrBotConnector.listen());
 
 // Configure ping route
 app.get("/ping", (req, res) => {

@@ -76,7 +76,7 @@ export class OcrBot extends builder.UniversalBot {
             const ocrResult = await ocrOperation();
             this.sendOcrResponse(session, ocrResult);
         } catch (e) {
-            const errorMessage = (e.result && e.result.reason) || e.message;
+            const errorMessage = (e.result && e.result.message) || e.message;
             session.send(Strings.analysis_error, errorMessage);
         }
     }
@@ -106,7 +106,7 @@ export class OcrBot extends builder.UniversalBot {
                 },
             };
             let message = new builder.Message(session)
-                .text(Strings.ocr_textfound_message)
+                .text(Strings.ocr_textfound_message, result.language)
                 .addAttachment(fileUploadRequest);
             session.send(message);
         } else {
