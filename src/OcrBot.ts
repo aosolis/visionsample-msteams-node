@@ -23,6 +23,7 @@
 
 import * as http from "http";
 import * as request from "request";
+import * as winston from "winston";
 import * as builder from "botbuilder";
 import * as consts from "./constants";
 import * as utils from "./utils";
@@ -174,7 +175,7 @@ export class OcrBot extends builder.UniversalBot {
                 };
                 request.put(options, (err, res: http.IncomingMessage, body) => {
                     if (err) {
-                        console.error(`Error uploading file: ${JSON.stringify(err)}`);
+                        winston.error(`Error uploading file: ${err.message}`, err);
                         session.send(Strings.ocr_upload_error, err.message);
                     } else if ((res.statusCode === 200) || (res.statusCode === 201)) {
                         const fileAttachment = {
@@ -199,7 +200,7 @@ export class OcrBot extends builder.UniversalBot {
                             fileUploadedMessage.address(addressOfMessageToUpdate);
                             session.connector.update(fileUploadedMessage.toMessage(), (err, done) => {
                                 if (err) {
-                                    console.error(`Error updating message: ${err.message}`);
+                                    winston.error(`Error updating activity. id:${event.replyToId} error:${err.message}`, err);
                                     session.send(fileUploadedMessage);
                                 }
                             });
@@ -207,7 +208,7 @@ export class OcrBot extends builder.UniversalBot {
                             session.send(fileUploadedMessage);
                         }
                     } else {
-                        console.error(`Upload error. statusCode: ${res.statusCode}, body: ${JSON.stringify(body)}`);
+                        winston.error(`Upload error. statusCode:${res.statusCode}`, body);
                         session.send(Strings.ocr_upload_error, res.statusMessage);
                     }
                 });

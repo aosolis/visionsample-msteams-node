@@ -24,6 +24,7 @@
 import * as http from "http";
 import * as request from "request";
 import * as querystring from "querystring";
+import * as winston from "winston";
 
 // =========================================================
 // Azure Vision API
@@ -118,7 +119,7 @@ export class VisionApi {
                     try {
                         e.result = this.parseJSONIfString(body);
                     } catch (parseError) {
-                        console.error("Error parsing body: " + parseError);
+                        winston.error(`Error parsing body: ${parseError.message}`, body);
                     }
                     reject(e);
                 } else {
@@ -159,7 +160,7 @@ export class VisionApi {
                     try {
                         e.result = this.parseJSONIfString(body);
                     } catch (parseError) {
-                        console.error("Error parsing body: " + parseError);
+                        winston.error(`Error parsing body: ${parseError.message}`, body);
                     }
                     reject(e);
                 } else {

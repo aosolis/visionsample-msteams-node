@@ -350,7 +350,7 @@ export async function getInlineAttachmentContentAsync(contentUrl:string, session
             if (err) {
                 reject(err);
             } else if (res.statusCode !== 200) {
-                console.error(`Attachment download error. statusCode: ${res.statusCode}, body: ${JSON.stringify(body)}`);
+                winston.error(`Attachment download error. statusCode: ${res.statusCode}`, body);
                 reject(new Error(res.statusMessage));
             } else {
                 resolve(body);
