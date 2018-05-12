@@ -15,4 +15,5 @@ export const Strings = {
    "ocr_file_name": "ocr_file_name",
    "ocr_textfound_message": "ocr_textfound_message",
    "ocr_notextfound_message": "ocr_notextfound_message",
+   "ocr_file_upload_declined": "ocr_file_upload_declined",
 };

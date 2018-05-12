@@ -124,7 +124,7 @@ export class OcrBot extends builder.UniversalBot {
             // User declined upload
             case "decline":
                 session.conversationData.ocrResult = null;
-                session.send("Ok!");
+                session.send(Strings.ocr_file_upload_declined);
                 break;
 
             // User accepted file
@@ -163,7 +163,6 @@ export class OcrBot extends builder.UniversalBot {
                             },
                         };
                         const successMessage = new builder.Message(session)
-                            .text("Here's your file.")
                             .addAttachment(fileAttachment);
                         session.send(successMessage);
                     } else {

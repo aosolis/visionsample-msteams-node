@@ -8,5 +8,6 @@
     "ocr_file_description": "Text recognized from the image",
     "ocr_file_name": "result.txt",
     "ocr_textfound_message": "I found %s text in the picture that you sent.",
-    "ocr_notextfound_message": [ "I didn't find any text in that picture.", "Hmm, that didn't seem to have any text.", "Sorry, did that contain any words?", "Are you sure that had text in it?" ]
+    "ocr_notextfound_message": [ "I didn't find any text in that picture.", "Hmm, that didn't seem to have any text.", "Sorry, did that contain any words?", "Are you sure that had text in it?" ],
+    "ocr_file_upload_declined": "Ok! If you change your mind, send me the picture again."
 }
