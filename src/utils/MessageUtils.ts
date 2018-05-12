@@ -316,10 +316,12 @@ export function getFirstFileAttachmentUrl(message: builder.IMessage): string {
     return null;
 }
 
+const imageContentTypeRegExp = /^image\/.+/;
+
 // Get the content url for the first image sent as an inline attachment.
 // This url requires authentication to download; see getInlineImageAttachmentAsync().
 export function getFirstInlineImageAttachmentUrl(message: builder.IMessage): string {
-    const imageAttachment = message.attachments.find(item => item.contentType === "image/*");
+    const imageAttachment = message.attachments.find(item => imageContentTypeRegExp.test(item.contentType));
     if (imageAttachment) {
         return imageAttachment.contentUrl;
     }
