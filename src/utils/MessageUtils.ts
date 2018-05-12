@@ -2,6 +2,7 @@ import urlJoin = require("url-join");
 import * as builder from "botbuilder";
 import * as request from "request";
 import * as winston from "winston";
+import * as http from "http";
 
 // Helpers for working with messages
 
@@ -277,6 +278,59 @@ export function loadSessionAsync(bot: builder.UniversalBot, event: builder.IEven
                 } else {
                     resolve (session);
                 }
+            }
+        });
+    });
+}
+
+// Get the content url for the first file attachment.
+// This url can be downloaded directly without additional authentication, but it is time-limited.
+export function getFirstFileAttachmentUrl(message: builder.IMessage): string {
+    const fileAttachment = message.attachments.find(item => item.contentType === "application/vnd.microsoft.teams.file.download.info");
+    if (fileAttachment) {
+        return fileAttachment.content.downloadUrl;
+    }
+    return null;
+}
+
+// Get the content url for the first image sent as an inline attachment.
+// This url requires authentication to download; see getInlineImageAttachmentAsync().
+export function getFirstInlineImageAttachmentUrl(message: builder.IMessage): string {
+    const imageAttachment = message.attachments.find(item => item.contentType === "image/*");
+    if (imageAttachment) {
+        return imageAttachment.contentUrl;
+    }
+    return null;
+}
+
+// Downloads the content of an inline attachment.
+export async function getInlineAttachmentContentAsync(contentUrl:string, session: builder.Session): Promise<Buffer> {
+    let connector = session.connector as builder.ChatConnector;
+    let accessToken = await new Promise<string>((resolve, reject) => {
+        connector.getAccessToken((err, accessToken) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(accessToken);
+            }
+        })
+    });
+    return await new Promise<Buffer>((resolve, reject) => {
+        let options = {
+            url: contentUrl,
+            headers: {
+                "Authorization": `Bearer ${accessToken}`
+            },
+            encoding: null,
+        };
+        request.get(options, (err, res: http.IncomingMessage, body: Buffer) => {
+            if (err) {
+                reject(err);
+            } else if (res.statusCode !== 200) {
+                console.error(`Attachment download error. statusCode: ${res.statusCode}, body: ${JSON.stringify(body)}`);
+                reject(new Error(res.statusMessage));
+            } else {
+                resolve(body);
             }
         });
     });

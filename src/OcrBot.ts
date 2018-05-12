@@ -30,7 +30,7 @@ export class OcrBot extends builder.UniversalBot {
 
     // Handle incoming messages
     private async _onMessage(session: builder.Session) {
-        const fileUrl = this.getImageFileAttachmentUrl(session.message);
+        const fileUrl = utils.getFirstFileAttachmentUrl(session.message);
         if (fileUrl) {
             // Image was attached as a file
             this.returnRecognizedTextAsync(session, () => {
@@ -39,11 +39,11 @@ export class OcrBot extends builder.UniversalBot {
             return;
         }
         
-        const inlineImageUrl = this.getInlineImageAttachmentUrl(session.message);
+        const inlineImageUrl = utils.getFirstInlineImageAttachmentUrl(session.message);
         if (inlineImageUrl) {
             // Image was attached as inline content
             this.returnRecognizedTextAsync(session, async () => {
-                let buffer = await this.getInlineImageAttachmentAsync(inlineImageUrl, session);
+                let buffer = await utils.getInlineAttachmentContentAsync(inlineImageUrl, session);
                 return await this.visionApi.runOcrAsync(buffer);
             });
             return;
@@ -166,7 +166,7 @@ export class OcrBot extends builder.UniversalBot {
                             .addAttachment(fileAttachment);
                         session.send(successMessage);
                     } else {
-                        console.error(`Upload error. statusCode: ${res.statusCode}, body: ${body}`);
+                        console.error(`Upload error. statusCode: ${res.statusCode}, body: ${JSON.stringify(body)}`);
                         session.send(Strings.ocr_upload_error, res.statusMessage);
                     }
                 });
@@ -184,57 +184,5 @@ export class OcrBot extends builder.UniversalBot {
             return lines.join("\r\n");
         });
         return regions.join("\r\n\r\n");
-    }
-
-    // Get the content url for an image sent as a file attachment.
-    // This url can be downloaded directly without additional authentication, but it is time-limited.
-    private getImageFileAttachmentUrl(message: builder.IMessage): string {
-        const fileAttachment = message.attachments.find(item => item.contentType === "application/vnd.microsoft.teams.file.download.info");
-        if (fileAttachment) {
-            return fileAttachment.content.downloadUrl;
-        }
-        return null;
-    }
-
-    // Get the content url for an image sent as an inline attachment.
-    // This url requires authentication to download; see getInlineImageAttachmentAsync().
-    private getInlineImageAttachmentUrl(message: builder.IMessage): string {
-        const imageAttachment = message.attachments.find(item => item.contentType === "image/*");
-        if (imageAttachment) {
-            return imageAttachment.contentUrl;
-        }
-        return null;
-    }
-
-    // Downloads the image sent as an inline attachment.
-    private async getInlineImageAttachmentAsync(contentUrl:string, session: builder.Session): Promise<Buffer> {
-        let connector = session.connector as builder.ChatConnector;
-        let accessToken = await new Promise<string>((resolve, reject) => {
-            connector.getAccessToken((err, accessToken) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(accessToken);
-                }
-            })
-        });
-        return await new Promise<Buffer>((resolve, reject) => {
-            let options = {
-                url: contentUrl,
-                headers: {
-                    "Authorization": `Bearer ${accessToken}`
-                },
-                encoding: null,
-            };
-            request.get(options, (err, res: http.IncomingMessage, body: Buffer) => {
-                if (err) {
-                    reject(err);
-                } else if (res.statusCode !== 200) {
-                    reject(new Error(res.statusMessage));
-                } else {
-                    resolve(body);
-                }
-            });
-        });
     }
 }
