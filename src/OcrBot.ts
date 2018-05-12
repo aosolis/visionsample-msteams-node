@@ -87,7 +87,6 @@ export class OcrBot extends builder.UniversalBot {
 
         if (text.length > 0)
         {
-
             let resultId = uuidv4();
             session.conversationData.ocrResult = {
                 resultId: resultId,
@@ -123,14 +122,16 @@ export class OcrBot extends builder.UniversalBot {
         switch (value.action) {
             // User declined upload
             case "decline":
-                session.conversationData.ocrResult = null;
+                delete session.conversationData.ocrResult;
                 session.send(Strings.ocr_file_upload_declined);
                 break;
 
             // User accepted file
             case "accept":
-                const ocrResult = session.conversationData.ocrResult;
                 const uploadInfo = value.uploadInfo;
+                const ocrResult = session.conversationData.ocrResult;
+                delete session.conversationData.ocrResult;
+                session.save();
 
                 // Check that this is the active OCR result
                 if (!ocrResult || (ocrResult.resultId !== value.context.resultId)) {
@@ -162,9 +163,26 @@ export class OcrBot extends builder.UniversalBot {
                                 fileType: uploadInfo.fileType,
                             },
                         };
-                        const successMessage = new builder.Message(session)
+                        const fileUploadedMessage = new builder.Message(session)
                             .addAttachment(fileAttachment);
-                        session.send(successMessage);
+
+                        // If we have replyToId, try updating the existing file upload consent message.
+                        // Only if that fails do we fall back to sending a new message.
+                        if (event.replyToId) {
+                            let addressOfMessageToUpdate: builder.IChatConnectorAddress = {
+                                ...event.address,
+                                id: event.replyToId,
+                            };
+                            fileUploadedMessage.address(addressOfMessageToUpdate);
+                            session.connector.update(fileUploadedMessage.toMessage(), (err, done) => {
+                                if (err) {
+                                    console.error(`Error updating message: ${err.message}`);
+                                    session.send(fileUploadedMessage);
+                                }
+                            });
+                        } else {
+                            session.send(fileUploadedMessage);
+                        }
                     } else {
                         console.error(`Upload error. statusCode: ${res.statusCode}, body: ${JSON.stringify(body)}`);
                         session.send(Strings.ocr_upload_error, res.statusMessage);
