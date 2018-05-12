@@ -3,7 +3,6 @@ var ts = require('gulp-typescript');
 var tslint = require('gulp-tslint');
 var del = require('del');
 var server = require('gulp-develop-server');
-var mocha = require('gulp-spawn-mocha');
 var sourcemaps = require('gulp-sourcemaps');
 var zip = require('gulp-zip');
 var rename = require('gulp-rename');
@@ -11,7 +10,6 @@ var jsonTransform = require('gulp-json-transform');
 var path = require('path');
 var minimist = require('minimist');
 var fs = require('fs');
-var _ = require('lodash');
 
 var knownOptions = {
 	string: 'packageName',
@@ -107,21 +105,6 @@ gulp.task('statics:copy', ['clean'], function () {
 gulp.task('build', ['clean', 'ts:lint', 'ts', 'statics:copy']);
 
 /**
- * Run tests.
- */
-gulp.task('test', ['ts', 'statics:copy'], function() {
-    return gulp
-        .src('build/test/' + options.specFilter + '.spec.js', {read: false})
-        .pipe(mocha({cwd: 'build/src'}))
-        .once('error', function () {
-            process.exit(1);
-        })
-        .once('end', function () {
-            process.exit();
-        });
-});
-
-/**
  * Package up app into a ZIP file for Azure deployment.
  */
 gulp.task('package', ['build'], function () {
@@ -152,8 +135,8 @@ gulp.task('package', ['build'], function () {
 });
 
 gulp.task('server:start', ['build'], function() {
-    server.listen({path: 'build/src/app.js'}, function(error) {
-        console.log(error);
+    server.listen({path: 'app.js', cwd: 'build/src'}, function(error) {
+        console.error(error);
     });
 });
 
