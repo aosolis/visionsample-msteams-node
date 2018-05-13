@@ -91,11 +91,12 @@ export class VisionApi {
     // Get a description of the image
     public async describeImageAsync(image: string|Buffer, language?: string, maxCandidates?:number): Promise<DescribeImageResult> {
         return new Promise<DescribeImageResult>((resolve, reject) => {
-            let qsp: any = {
+            const qsp: any = {
                 maxCandidates: maxCandidates || 1,
                 language: language || "en",
             };
-            let options: request.OptionsWithUrl = {
+
+            const options: request.OptionsWithUrl = {
                 url: `https://${this.endpoint}/${describePath}?${querystring.stringify(qsp)}`,
                 headers: {
                     "Ocp-Apim-Subscription-Key": this.accessKey
@@ -114,7 +115,7 @@ export class VisionApi {
                 if (err) {
                     reject(err);
                 } else if (res.statusCode !== 200) {
-                    let e = new Error(res.statusMessage) as any;
+                    const e = new Error(res.statusMessage) as any;
                     e.statusCode = res.statusCode;
                     try {
                         e.result = this.parseJSONIfString(body);
@@ -132,11 +133,14 @@ export class VisionApi {
     // Get a description of the image
     public async runOcrAsync(image: string|Buffer, language?: string, maxCandidates?:number): Promise<OcrResult> {
         return new Promise<OcrResult>((resolve, reject) => {
-            let qsp: any = {
+            const qsp: any = {
                 detectOrientation: true,
-                language: language || "en",
             };
-            let options: request.OptionsWithUrl = {
+            if (language) {
+                qsp.language = language;
+            }
+
+            const options: request.OptionsWithUrl = {
                 url: `https://${this.endpoint}/${ocrPath}?${querystring.stringify(qsp)}`,
                 headers: {
                     "Ocp-Apim-Subscription-Key": this.accessKey
@@ -155,7 +159,7 @@ export class VisionApi {
                 if (err) {
                     reject(err);
                 } else if (res.statusCode !== 200) {
-                    let e = new Error(res.statusMessage) as any;
+                    const e = new Error(res.statusMessage) as any;
                     e.statusCode = res.statusCode;
                     try {
                         e.result = this.parseJSONIfString(body);
