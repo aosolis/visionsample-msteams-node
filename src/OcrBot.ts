@@ -24,6 +24,7 @@
 import * as http from "http";
 import * as request from "request";
 import * as winston from "winston";
+import * as langs from "langs";
 import * as builder from "botbuilder";
 import * as consts from "./constants";
 import * as utils from "./utils";
@@ -136,7 +137,7 @@ export class OcrBot extends builder.UniversalBot {
                 },
             };
             let message = new builder.Message(session)
-                .text(Strings.ocr_textfound_message, result.language)
+                .text(Strings.ocr_textfound_message, langs.where("1", result.language).name || result.language)
                 .addAttachment(fileUploadRequest);
             session.send(message);
         } else {

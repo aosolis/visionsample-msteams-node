@@ -21,6 +21,7 @@
     "botbuilder-teams": "^0.1.7",
     "config": "^1.25.1",
     "express": "~4.13.1",
+    "langs": "^2.0.0",
     "mongodb": "^3.0.8",
     "morgan": "~1.6.1",
     "sprintf-js": "^1.1.1",
