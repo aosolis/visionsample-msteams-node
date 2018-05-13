@@ -54,6 +54,8 @@ export class ImageCaptionBot extends builder.UniversalBot {
 
     // Handle incoming messages
     private async _onMessage(session: builder.Session) {
+        session.sendTyping();
+
         const fileUrl = utils.getFirstFileAttachmentUrl(session.message);
         if (fileUrl) {
             // Image was attached as a file
