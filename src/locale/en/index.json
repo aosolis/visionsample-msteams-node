@@ -9,8 +9,10 @@
         "I have a feeling that's %s."
     ],
     "image_caption_help": [ "Hi! Send me a picture or a link to one, and I'll tell you what it is." ],
+    "image_caption_help_paste": [ "Hi! Send me a picture or a link to one, and I'll tell you what it is. In channels and group chats, please paste the picture directly into the compose box: Teams won't let me receive file attachments yet!" ],
     "analysis_error": "There was a problem analyzing the image: %s",
-    "ocr_help": [ "Hi! Send me a picture or a link to one, and I'll send you a file with the text that I recognized." ],
+    "ocr_help": [ "Hi! Send me a picture or a link to one, and I'll return a file with the text that I recognized." ],
+    "ocr_help_paste": [ "Hi! Send me a picture or a link to one, and I'll return a file with the text that I recognized. In channels and group chats, please paste the picture directly into the compose box: Teams won't let me receive file attachments yet!" ],
     "ocr_result_expired": "This result has expired. Send me the picture again, and I'll rescan it.",
     "ocr_upload_error": "There was an error uploading the file: %s",
     "ocr_file_description": "Text recognized from the image",

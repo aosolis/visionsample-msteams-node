@@ -86,7 +86,12 @@ export class ImageCaptionBot extends builder.UniversalBot {
             }
         }
         
-        session.send(Strings.image_caption_help);
+        // Send help message
+        if (session.message.address.conversation.conversationType === "personal") {
+            session.send(Strings.image_caption_help);
+        } else {
+            session.send(Strings.image_caption_help_paste);
+        }
     }
 
     // Return a caption for the image

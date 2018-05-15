@@ -87,7 +87,12 @@ export class OcrBot extends builder.UniversalBot {
             }
         }
         
-        session.send(Strings.ocr_help);
+        // Send help message
+        if (session.message.address.conversation.conversationType === "personal") {
+            session.send(Strings.ocr_help);
+        } else {
+            session.send(Strings.ocr_help_paste);
+        }
     }
 
     // Handle incoming invokes
