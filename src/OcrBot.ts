@@ -101,7 +101,7 @@ export class OcrBot extends builder.UniversalBot {
         }
     }
 
-    // Return a caption for the image
+    // Return text recognized in the image
     private async returnRecognizedTextAsync(session: builder.Session, ocrOperation: () => Promise<vision.OcrResult>): Promise<void> {
         try {
             const ocrResult = await ocrOperation();
@@ -133,13 +133,14 @@ export class OcrBot extends builder.UniversalBot {
                     sizeInBytes: buffer.byteLength,
                     acceptContext: {
                         resultId: resultId,
+                    },
+                    declineContext: {
+                        resultId: resultId,
                     }
                 },
             };
-            let message = new builder.Message(session)
-                .text(Strings.ocr_textfound_message, langs.where("1", result.language).name || result.language)
-                .addAttachment(fileUploadRequest);
-            session.send(message);
+            session.send(Strings.ocr_textfound_message, langs.where("1", result.language).name || result.language);
+            session.send(new builder.Message(session).addAttachment(fileUploadRequest));
         } else {
             session.send(Strings.ocr_notextfound_message);
         }
@@ -148,21 +149,35 @@ export class OcrBot extends builder.UniversalBot {
     // Handle file consent response
     private async handleFileConsentResponseAsync(event: builder.IEvent): Promise<void> {
         const session = await utils.loadSessionAsync(this, event);
+        const ocrResult = session.conversationData.ocrResult;
 
-        const value = (event as any).value;        
+        // Create address of source message
+        let addressOfSourceMessage: builder.IChatConnectorAddress = {
+            ...event.address,
+            id: event.replyToId,
+        };
+
+        const value = (event as any).value;
         switch (value.action) {
             // User declined upload
             case "decline":
-                delete session.conversationData.ocrResult;
+                // Delete the file consent card
+                if (event.replyToId) {
+                    session.connector.delete(addressOfSourceMessage, (err) => {
+                        if (err) {
+                            winston.error(`Failed to delete consent card: ${err.message}`, err);
+                        }
+                    });
+                }
                 session.send(Strings.ocr_file_upload_declined);
                 break;
 
             // User accepted file
             case "accept":
                 const uploadInfo = value.uploadInfo;
-                const ocrResult = session.conversationData.ocrResult;
-                delete session.conversationData.ocrResult;
-                session.save();
+
+                session.sendTyping();
+                session.sendBatch();
 
                 // Check that this is the active OCR result
                 if (!ocrResult || (ocrResult.resultId !== value.context.resultId)) {
@@ -185,6 +200,16 @@ export class OcrBot extends builder.UniversalBot {
                         winston.error(`Error uploading file: ${err.message}`, err);
                         session.send(Strings.ocr_upload_error, err.message);
                     } else if ((res.statusCode === 200) || (res.statusCode === 201)) {
+                        // Delete the file consent card
+                        if (event.replyToId) {
+                            session.connector.delete(addressOfSourceMessage, (err) => {
+                                if (err) {
+                                    winston.error(`Failed to delete consent card: ${err.message}`, err);
+                                }
+                            });
+                        }
+
+                        // Send message with link to the file
                         const fileAttachment = {
                             contentType: "application/vnd.microsoft.teams.card.file.info",
                             contentUrl: uploadInfo.contentUrl,
@@ -194,26 +219,7 @@ export class OcrBot extends builder.UniversalBot {
                                 fileType: uploadInfo.fileType,
                             },
                         };
-                        const fileUploadedMessage = new builder.Message(session)
-                            .addAttachment(fileAttachment);
-
-                        // If we have replyToId, try updating the existing file upload consent message.
-                        // Only if that fails do we fall back to sending a new message.
-                        if (event.replyToId) {
-                            let addressOfMessageToUpdate: builder.IChatConnectorAddress = {
-                                ...event.address,
-                                id: event.replyToId,
-                            };
-                            fileUploadedMessage.address(addressOfMessageToUpdate);
-                            session.connector.update(fileUploadedMessage.toMessage(), (err, done) => {
-                                if (err) {
-                                    winston.error(`Error updating activity. id:${event.replyToId} error:${err.message}`, err);
-                                    session.send(fileUploadedMessage);
-                                }
-                            });
-                        } else {
-                            session.send(fileUploadedMessage);
-                        }
+                        session.send(new builder.Message(session).addAttachment(fileAttachment));
                     } else {
                         winston.error(`Upload error. statusCode:${res.statusCode}`, body);
                         session.send(Strings.ocr_upload_error, res.statusMessage);
