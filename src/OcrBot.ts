@@ -57,12 +57,13 @@ export class OcrBot extends builder.UniversalBot {
     private async _onMessage(session: builder.Session) {
         session.sendTyping();
 
-        const fileUrl = utils.getFirstFileAttachmentUrl(session.message);
-        if (fileUrl) {
+        const fileAttachment = utils.getFirstFileAttachment(session.message);
+        if (fileAttachment) {
             // Image was attached as a file
+            const resultFilename = fileAttachment.name + ".txt";
             this.returnRecognizedTextAsync(session, () => {
-                return this.visionApi.runOcrAsync(fileUrl);
-            });
+                return this.visionApi.runOcrAsync(fileAttachment.downloadUrl);
+            }, resultFilename);
             return;
         }
         
@@ -107,10 +108,10 @@ export class OcrBot extends builder.UniversalBot {
     }
 
     // Return text recognized in the image
-    private async returnRecognizedTextAsync(session: builder.Session, ocrOperation: () => Promise<vision.OcrResult>): Promise<void> {
+    private async returnRecognizedTextAsync(session: builder.Session, ocrOperation: () => Promise<vision.OcrResult>, filename?: string): Promise<void> {
         try {
             const ocrResult = await ocrOperation();
-            this.sendOcrResponse(session, ocrResult);
+            this.sendOcrResponse(session, ocrResult, filename);
         } catch (e) {
             const errorMessage = (e.result && e.result.message) || e.message;
             session.send(Strings.analysis_error, errorMessage);
@@ -118,7 +119,7 @@ export class OcrBot extends builder.UniversalBot {
     }
 
     // Send the OCR response to the user
-    private sendOcrResponse(session: builder.Session, result: vision.OcrResult): void {
+    private sendOcrResponse(session: builder.Session, result: vision.OcrResult, filename?: string): void {
         let text = this.getRecognizedText(result);
 
         if (text.length > 0)
@@ -132,7 +133,7 @@ export class OcrBot extends builder.UniversalBot {
             const buffer = new Buffer(text, "utf8");
             let fileUploadRequest: builder.IAttachment = {
                 contentType: "application/vnd.microsoft.teams.card.file.consent",
-                name: session.gettext(Strings.ocr_file_name),
+                name: filename || session.gettext(Strings.ocr_file_name),
                 content: {
                     description: session.gettext(Strings.ocr_file_description),
                     sizeInBytes: buffer.byteLength,
@@ -226,7 +227,7 @@ export class OcrBot extends builder.UniversalBot {
                         };
                         session.send(new builder.Message(session).addAttachment(fileAttachment));
                     } else {
-                        winston.error(`Upload error. statusCode:${res.statusCode}`, body);
+                        winston.error(`Error uploading file: statusCode:${res.statusCode}`, body);
                         session.send(Strings.ocr_upload_error, res.statusMessage);
                     }
                 });

@@ -56,11 +56,11 @@ export class ImageCaptionBot extends builder.UniversalBot {
     private async _onMessage(session: builder.Session) {
         session.sendTyping();
 
-        const fileUrl = utils.getFirstFileAttachmentUrl(session.message);
-        if (fileUrl) {
+        const fileAttachment = utils.getFirstFileAttachment(session.message);
+        if (fileAttachment) {
             // Image was attached as a file
             this.returnImageCaptionAsync(session, () => {
-                return this.visionApi.describeImageAsync(fileUrl);
+                return this.visionApi.describeImageAsync(fileAttachment.downloadUrl);
             });
             return;
         }

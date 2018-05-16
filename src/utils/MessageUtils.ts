@@ -306,12 +306,28 @@ export function loadSessionAsync(bot: builder.UniversalBot, event: builder.IEven
     });
 }
 
+// Information about a file attachment
+export interface FileAttachment {
+    // File name
+    name: string;
+    // File type
+    fileType: string;
+    // User-accessible url to the file
+    contentUrl: string;
+    // Bot-accessible url to the file (short validity)
+    downloadUrl: string;
+}
+
 // Get the content url for the first file attachment.
 // This url can be downloaded directly without additional authentication, but it is time-limited.
-export function getFirstFileAttachmentUrl(message: builder.IMessage): string {
+export function getFirstFileAttachment(message: builder.IMessage): FileAttachment {
     const fileAttachment = message.attachments.find(item => item.contentType === "application/vnd.microsoft.teams.file.download.info");
     if (fileAttachment) {
-        return fileAttachment.content.downloadUrl;
+        return {
+            ...fileAttachment.content,
+            name: fileAttachment.name,
+            contentUrl: fileAttachment.contentUrl,
+        }
     }
     return null;
 }
