@@ -43,9 +43,10 @@ let instrumentationKey = config.get("app.instrumentationKey");
 if (instrumentationKey) {
     appInsights.setup(instrumentationKey)
         .setAutoDependencyCorrelation(true)
+        .setUseDiskRetryCaching(false)
         .start();
     winston.add(utils.ApplicationInsightsTransport as any);
-    appInsights.client.addTelemetryProcessor(utils.stripQueryFromTelemetryUrls);
+    appInsights.defaultClient.addTelemetryProcessor(utils.stripQueryFromTelemetryUrls);
 }
 
 let app = express();
