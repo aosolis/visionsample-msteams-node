@@ -54,12 +54,12 @@ export class ApplicationInsightsTransport extends winston.Transport {
 
         // Track trace events
         let severityLevel = this.getSeverityLevel(level);
-        appInsights.defaultClient.trackTrace(msg, severityLevel, meta);
+        appInsights.defaultClient.trackTrace({ message: msg, severity: severityLevel });
 
-        // Track exceptions
+        // Track critical exceptions
         if ((severityLevel === SeverityLevel.Error || severityLevel === SeverityLevel.Critical) &&
             meta && (meta instanceof Error)) {
-            appInsights.defaultClient.trackException(meta);
+            appInsights.defaultClient.trackException({ exception: meta });
         }
 
         self.emit("logged");

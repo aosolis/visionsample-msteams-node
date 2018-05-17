@@ -38,8 +38,13 @@ export function getCorrelationId(address: builder.IAddress): string {
 
 // Log event to telemetry
 export function trackEvent(eventName: string, properties: any = {}, botEvent?: builder.IEvent): void {
-    if (appInsights.client) {
+    const client = appInsights.defaultClient;
+    if (client) {
         properties = properties || {};
+
+        const context = client.context;
+        const previousUserId = context.tags[context.keys.userId];
+
         if (botEvent) {
             let address = botEvent.address;
             properties = {
@@ -48,14 +53,18 @@ export function trackEvent(eventName: string, properties: any = {}, botEvent?: b
                 tenant: messageUtils.getTenantId(botEvent),
                 ...properties,
             };
+            context.tags[context.keys.userId] = address.user.id;
         }
-        appInsights.client.trackEvent(eventName, properties);
+
+        client.trackEvent({ name: eventName, properties: properties });
+        context.tags[context.keys.userId] = previousUserId;
     }
 }
 
 // Log exception to telemetry
 export function trackException(error: Error, properties: any = {}, botEvent?: builder.IEvent): void {
-    if (appInsights.client) {
+    const client = appInsights.defaultClient;
+    if (client) {
         properties = properties || {};
         if (botEvent) {
             let address = botEvent.address;
@@ -66,6 +75,6 @@ export function trackException(error: Error, properties: any = {}, botEvent?: bu
                 ...properties,
             };
         }
-        appInsights.client.trackException(error, properties);
+        client.trackException({ exception: error, properties: properties });
     }
 }
