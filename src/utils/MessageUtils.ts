@@ -294,7 +294,7 @@ export function loadSessionAsync(bot: builder.UniversalBot, event: builder.IEven
                     session.localizer.load(locale, (err2) => {
                         // Log errors but resolve session anyway
                         if (err2) {
-                            winston.error(`Failed to load localizer for ${locale}`, err2);
+                            winston.warn(`Failed to load localizer for ${locale}`, err2);
                         }
                         resolve(session);
                     });

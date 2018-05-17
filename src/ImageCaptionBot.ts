@@ -21,7 +21,6 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import * as http from "http";
 import * as request from "request";
 import * as builder from "botbuilder";
 import * as msteams from "botbuilder-teams";
@@ -29,6 +28,7 @@ import * as consts from "./constants";
 import * as utils from "./utils";
 import * as vision from "./VisionApi";
 import { Strings } from "./locale/locale";
+import { LogActivityTelemetry } from "./middleware/LogActivityTelemetry";
 
 // =========================================================
 // Image Caption Bot
@@ -47,7 +47,10 @@ export class ImageCaptionBot extends builder.UniversalBot {
 
         this.visionApi = botSettings.visionApi as vision.VisionApi;
 
-        this.use(new msteams.StripBotAtMentions());
+        this.use(
+            new LogActivityTelemetry(),
+            new msteams.StripBotAtMentions()
+        );
 
         this.dialog(consts.DialogId.Root, this._onMessage.bind(this));
     }

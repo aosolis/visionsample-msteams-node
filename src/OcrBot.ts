@@ -30,6 +30,7 @@ import * as consts from "./constants";
 import * as utils from "./utils";
 import * as vision from "./VisionApi";
 import { Strings } from "./locale/locale";
+import { LogActivityTelemetry } from "./middleware/LogActivityTelemetry";
 const uuidv4 = require('uuid/v4');
 
 // =========================================================
@@ -49,12 +50,16 @@ export class OcrBot extends builder.UniversalBot {
 
         this.visionApi = botSettings.visionApi as vision.VisionApi;
 
-        this.dialog(consts.DialogId.Root, this._onMessage.bind(this));
-        _connector.onInvoke(this._onInvoke.bind(this));
+        this.use(
+            new LogActivityTelemetry(),
+        );
+
+        this.dialog(consts.DialogId.Root, this.handleMessage.bind(this));
+        _connector.onInvoke(this.handleInvoke.bind(this));
     }
 
     // Handle incoming messages
-    private async _onMessage(session: builder.Session) {
+    private async handleMessage(session: builder.Session) {
         session.sendTyping();
 
         const fileAttachment = utils.getFirstFileAttachment(session.message);
@@ -97,7 +102,10 @@ export class OcrBot extends builder.UniversalBot {
     }
 
     // Handle incoming invokes
-    private async _onInvoke(event: builder.IEvent, callback: (err: Error, body: any, status?: number) => void): Promise<void> {
+    private async handleInvoke(event: builder.IEvent, callback: (err: Error, body: any, status?: number) => void): Promise<void> {
+        // Invokes don't go through middleware, so we have to log them specifically
+        LogActivityTelemetry.logIncomingActivity(event);
+
         const eventAsAny = event as any;
         if (eventAsAny.name === "fileConsent/invoke") {
             await this.handleFileConsentResponseAsync(event);
@@ -171,7 +179,7 @@ export class OcrBot extends builder.UniversalBot {
                 if (event.replyToId) {
                     session.connector.delete(addressOfSourceMessage, (err) => {
                         if (err) {
-                            winston.error(`Failed to delete consent card: ${err.message}`, err);
+                            winston.warn(`Failed to delete consent card: ${err.message}`, err);
                         }
                     });
                 }
@@ -210,7 +218,7 @@ export class OcrBot extends builder.UniversalBot {
                         if (event.replyToId) {
                             session.connector.delete(addressOfSourceMessage, (err) => {
                                 if (err) {
-                                    winston.error(`Failed to delete consent card: ${err.message}`, err);
+                                    winston.warn(`Failed to delete consent card: ${err.message}`, err);
                                 }
                             });
                         }
