@@ -33,7 +33,7 @@ import * as botbuilder from "botbuilder";
 import * as msteams from "botbuilder-teams";
 import * as winston from "winston";
 import { VisionApi } from "./VisionApi";
-import { ImageCaptionBot } from "./ImageCaptionBot";
+import { CaptionBot } from "./CaptionBot";
 import { OcrBot } from "./OcrBot";
 import * as storage from "./storage";
 import * as utils from "./utils";
@@ -65,7 +65,7 @@ let captionBotSettings = {
     storage: new storage.NullBotStorage(),
     visionApi: new VisionApi(config.get("vision.endpoint"), config.get("vision.accessKey")),
 };
-let captionBot = new ImageCaptionBot(captionBotConnector, captionBotSettings);
+let captionBot = new CaptionBot(captionBotConnector, captionBotSettings);
 captionBot.on("error", (error: Error) => {
     winston.error(error.message, error);
 });

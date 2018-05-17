@@ -31,10 +31,10 @@ import { Strings } from "./locale/locale";
 import { LogActivityTelemetry } from "./middleware/LogActivityTelemetry";
 
 // =========================================================
-// Image Caption Bot
+// Caption Bot
 // =========================================================
 
-export class ImageCaptionBot extends builder.UniversalBot {
+export class CaptionBot extends builder.UniversalBot {
 
     private visionApi: vision.VisionApi;
 
