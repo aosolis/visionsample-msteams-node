@@ -267,14 +267,29 @@ function createAddressFromResponse(address: builder.IChatConnectorAddress, respo
     return result;
 }
 
-// Get locale from client info in event
-export function getLocale(evt: builder.IEvent): string {
+// Client information entity
+export interface ClientInfo {
+    locale: string;
+    country: string;
+    platform: string;
+}
+
+// Get client info in event
+export function getClientInfo(evt: builder.IEvent): ClientInfo|undefined {
     let event = (evt as any);
     if (event.entities && event.entities.length) {
-        let clientInfo = event.entities.find(e => e.type && e.type === "clientInfo");
+        return event.entities.find(e => e.type && e.type === "clientInfo") as ClientInfo;
+    }
+    return undefined;
+}
+
+// Get locale from client info in event
+export function getLocale(evt: builder.IEvent): string|undefined {
+    let clientInfo = getClientInfo(evt);
+    if (clientInfo) {
         return clientInfo.locale;
     }
-    return null;
+    return undefined;
 }
 
 // Load a Session corresponding to the given event

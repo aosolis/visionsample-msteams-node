@@ -21,10 +21,10 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-let appInsights = require("applicationinsights");
 let uuidV4 = require("uuid/v4");
+import * as appInsights from "applicationinsights";
 import * as builder from "botbuilder";
-import * as messageUtils from "./MessageUtils";
+import * as utils from "./MessageUtils";
 
 // Add correlation id to address
 export function addCorrelationId(address: builder.IAddress): void {
@@ -42,22 +42,30 @@ export function trackEvent(eventName: string, properties: any = {}, botEvent?: b
     if (client) {
         properties = properties || {};
 
-        const context = client.context;
-        const previousUserId = context.tags[context.keys.userId];
+        const contextTags = client.context.tags;
+        const contextKeys = client.context.keys;
 
         if (botEvent) {
             let address = botEvent.address;
             properties = {
                 correlationId: getCorrelationId(address),
                 user: address.user.id,
-                tenant: messageUtils.getTenantId(botEvent),
+                tenant: utils.getTenantId(botEvent),
                 ...properties,
             };
-            context.tags[context.keys.userId] = address.user.id;
+
+            contextTags[contextKeys.userId] = address.user.id;
+
+            const clientInfo = utils.getClientInfo(botEvent);
+            if (clientInfo) {
+                contextTags[contextKeys.deviceType] = clientInfo.platform;
+                contextTags[contextKeys.deviceLocale] = clientInfo.locale;
+                properties.locale = clientInfo.locale;      // deviceLocale isn't showing up in AI
+            }
         }
 
         client.trackEvent({ name: eventName, properties: properties });
-        context.tags[context.keys.userId] = previousUserId;
+        contextTags[contextKeys.userId] = contextTags[contextKeys.deviceType] = contextTags[contextKeys.deviceLocale] = undefined;
     }
 }
 
@@ -71,7 +79,7 @@ export function trackException(error: Error, properties: any = {}, botEvent?: bu
             properties = {
                 correlationId: getCorrelationId(address),
                 user: address.user.id,
-                tenant: messageUtils.getTenantId(botEvent),
+                tenant: utils.getTenantId(botEvent),
                 ...properties,
             };
         }
