@@ -51,6 +51,7 @@ export function trackEvent(eventName: string, properties: any = {}, botEvent?: b
                 correlationId: getCorrelationId(address),
                 user: address.user.id,
                 tenant: utils.getTenantId(botEvent),
+                sourceChannel: address.channelId,
                 ...properties,
             };
 
