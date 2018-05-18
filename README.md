@@ -53,7 +53,7 @@ File attachments are only supported in 1:1 chats with the bot. If a user in a ch
 ## Sending files
 We also announced at Build 2018 that bots will also be able to send files to a user in a 1:1 chat.
 
-Sending a file takes multiple steps:
+To send a file from your bot:
 
 #### 1) Ask the user for permission to upload the file
 Request permission by sending a file consent card attachment:
@@ -83,7 +83,7 @@ The Teams app renders this card as a permission request, with buttons to `Accept
 
 #### 2) User accepts or declines consent
 When the user presses either option, the bot receives an `invoke` message:
-```json
+```
 {
     "type": "invoke",
     "name": "fileConsent/invoke",
@@ -117,15 +117,15 @@ When setting the contents of the file, you only need `uploadInfo.uploadUrl`. How
 
 #### 3) Send the user a link to the uploaded file (optional)
 We recommend sending a link to the uploaded file. You can send a direct link, using `uploadInfo.contentUrl`, or attach a file chiclet to your message.
-```json
+```
 {
     "contentType": "application/vnd.microsoft.teams.card.file.info",
-    "contentUrl": <uploadInfo.contentUrl>,
-    "name": <uploadInfo.name>,
+    "contentUrl": "<uploadInfo.contentUrl>",
+    "name": "<uploadInfo.name>",
     "content": {
-        "uniqueId": <uploadInfo.uniqueId>,
-        "fileType": <uploadInfo.fileType>,
-    },
+        "uniqueId": "<uploadInfo.uniqueId>",
+        "fileType": "<uploadInfo.fileType>",
+    }
 }
 ```
 * `contentType` is `application/vnd.microsoft.teams.card.file.info`
@@ -147,7 +147,7 @@ Sending and receiving files from bots is still in Developer Preview, and not yet
 | Receive file from bot | ✔️ | ❌ | ❌ |
 
 You can use the `conversation.conversationType` property of the incoming message to determine the kind of conversation:
-```json
+```
 {
     ...
     "conversation": {
