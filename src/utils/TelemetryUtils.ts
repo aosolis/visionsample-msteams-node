@@ -52,12 +52,15 @@ export function trackEvent(eventName: string, properties: any = {}, botEvent?: b
     if (client) {
         properties = properties || {};
 
-        const contextTags = client.context.tags;
-        const contextKeys = client.context.keys;
+        const eventTelemetry: appInsights.Contracts.EventTelemetry = {
+            name: eventName,
+            properties: properties,
+            tagOverrides: {},
+        };
 
         if (botEvent) {
             let address = botEvent.address;
-            properties = {
+            eventTelemetry.properties = {
                 correlationId: getCorrelationId(address),
                 user: address.user.id,
                 tenant: utils.getTenantId(botEvent),
@@ -65,18 +68,21 @@ export function trackEvent(eventName: string, properties: any = {}, botEvent?: b
                 ...properties,
             };
 
-            contextTags[contextKeys.userId] = address.user.id;
+            const contextKeys = client.context.keys;
+            const tagOverrides = {};
+            tagOverrides[contextKeys.userId] = address.user.id;
 
             const clientInfo = utils.getClientInfo(botEvent);
             if (clientInfo) {
-                contextTags[contextKeys.deviceType] = clientInfo.platform;
-                contextTags[contextKeys.deviceLocale] = clientInfo.locale;
+                tagOverrides[contextKeys.deviceType] = clientInfo.platform;
+                tagOverrides[contextKeys.deviceLocale] = clientInfo.locale;
                 properties.locale = clientInfo.locale;      // deviceLocale isn't showing up in AI
             }
+
+            eventTelemetry.tagOverrides = tagOverrides;
         }
 
-        client.trackEvent({ name: eventName, properties: properties });
-        contextTags[contextKeys.userId] = contextTags[contextKeys.deviceType] = contextTags[contextKeys.deviceLocale] = undefined;
+        client.trackEvent(eventTelemetry);
     }
 }
 
@@ -103,12 +109,17 @@ export function trackScenario(scenarioName: string, properties: any = {}, botEve
     this.trackEvent(consts.TelemetryEvent.Scenario, {...properties, scenario: scenarioName }, botEvent);
 }
 
+// Log scenario step to telemetry
+export function trackScenarioStep(scenarioName: string, step: string, properties: any = {}, botEvent?: builder.IEvent): void {
+    this.trackScenario(scenarioName, {...properties, step: step }, botEvent);
+}
+
 // Log scenario to telemetry
 export function trackScenarioStart(scenarioName: string, properties: any = {}, botEvent?: builder.IEvent): void {
-    this.trackEvent(consts.TelemetryEvent.Scenario, {...properties, scenario: scenarioName, step: consts.ScenarioStep.Start }, botEvent);
+    this.trackScenarioStep(scenarioName, consts.ScenarioStep.Start, properties, botEvent);
 }
 
 // Log scenario to telemetry
 export function trackScenarioStop(scenarioName: string, properties: any = {}, botEvent?: builder.IEvent): void {
-    this.trackEvent(consts.TelemetryEvent.Scenario, {...properties, scenario: scenarioName, step: consts.ScenarioStep.Stop }, botEvent);
+    this.trackScenarioStep(scenarioName, consts.ScenarioStep.Stop, properties, botEvent);
 }

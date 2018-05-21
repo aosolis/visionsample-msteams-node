@@ -303,6 +303,10 @@ export function loadSessionAsync(bot: builder.UniversalBot, event: builder.IEven
                 winston.error("Loaded null session", { address: event.address });
                 reject(new Error("Failed to load session"));
             } else {
+                // Copy properties over
+                session.message.sourceEvent = event.sourceEvent;
+                session.message.replyToId = event.replyToId;
+
                 let locale = getLocale(event);
                 if (locale) {
                     (session as any)._locale = locale;

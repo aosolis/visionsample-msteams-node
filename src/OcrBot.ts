@@ -65,6 +65,7 @@ export class OcrBot extends builder.UniversalBot {
         const fileAttachment = utils.getFirstFileAttachment(session.message);
         if (fileAttachment) {
             // Image was attached as a file
+            utils.trackScenarioStart("ocr", { imageSource: "file" }, session.message);
             const resultFilename = fileAttachment.name + ".txt";
             this.returnRecognizedTextAsync(session, () => {
                 return this.visionApi.runOcrAsync(fileAttachment.downloadUrl);
@@ -75,6 +76,7 @@ export class OcrBot extends builder.UniversalBot {
         const inlineImageUrl = utils.getFirstInlineImageAttachmentUrl(session.message);
         if (inlineImageUrl) {
             // Image was attached as inline content
+            utils.trackScenarioStart("ocr", { imageSource: "inline" }, session.message);
             this.returnRecognizedTextAsync(session, async () => {
                 let buffer = await utils.getInlineAttachmentContentAsync(inlineImageUrl, session);
                 return await this.visionApi.runOcrAsync(buffer);
@@ -86,6 +88,7 @@ export class OcrBot extends builder.UniversalBot {
             // Try the text as an image URL
             let urlMatch = session.message.text.match(consts.urlRegExp);
             if (urlMatch) {
+                utils.trackScenarioStart("ocr", { imageSource: "url" }, session.message);
                 this.returnRecognizedTextAsync(session, () => {
                     return this.visionApi.runOcrAsync(urlMatch[0]);
                 });
@@ -94,6 +97,7 @@ export class OcrBot extends builder.UniversalBot {
         }
         
         // Send help message
+        utils.trackScenarioStart("unrecognizedInput", {}, session.message);
         if (session.message.address.conversation.conversationType === "personal") {
             session.send(Strings.ocr_help);
         } else {
@@ -124,9 +128,12 @@ export class OcrBot extends builder.UniversalBot {
         try {
             const ocrResult = await ocrOperation();
             this.sendOcrResponse(session, ocrResult, filename);
+            utils.trackScenarioStop("ocr", { success: true, ocrLanguage: ocrResult.language }, session.message);
         } catch (e) {
             const errorMessage = (e.result && e.result.message) || e.message;
+            winston.error(`Failed to analyze image: ${errorMessage}`, e);
             session.send(Strings.analysis_error, errorMessage);
+            utils.trackScenarioStop("ocr", { success: false, error: errorMessage }, session.message);
         }
     }
 
@@ -159,8 +166,10 @@ export class OcrBot extends builder.UniversalBot {
                     }
                 },
             };
+
             session.send(Strings.ocr_textfound_message, langs.where("1", result.language).name || result.language);
             session.send(new builder.Message(session).addAttachment(fileUploadRequest));
+            utils.trackScenarioStart("ocr_send", {}, session.message);
         } else {
             session.send(Strings.ocr_notextfound_message);
         }
@@ -185,11 +194,12 @@ export class OcrBot extends builder.UniversalBot {
                 if (event.replyToId) {
                     session.connector.delete(addressOfSourceMessage, (err) => {
                         if (err) {
-                            winston.warn(`Failed to delete consent card: ${err.message}`, err);
+                            winston.error(`Failed to delete consent card: ${err.message}`, err);
                         }
                     });
                 }
                 session.send(Strings.ocr_file_upload_declined);
+                utils.trackScenarioStop("ocr_send", { success: true, status: "declined" }, session.message);
                 break;
 
             // User accepted file
@@ -203,6 +213,7 @@ export class OcrBot extends builder.UniversalBot {
                 // Check that this is the active OCR result
                 if (!lastOcrResult || (lastOcrResult.resultId !== value.context.resultId)) {
                     session.send(Strings.ocr_result_expired);
+                    utils.trackScenarioStop("ocr_send", { success: true, status: "expired" }, session.message);
                     return;
                 }
 
@@ -220,12 +231,13 @@ export class OcrBot extends builder.UniversalBot {
                     if (err) {
                         winston.error(`Error uploading file: ${err.message}`, err);
                         session.send(Strings.ocr_upload_error, err.message);
+                        utils.trackScenarioStop("ocr_send", { success: false, error: err.message }, session.message);
                     } else if ((res.statusCode === 200) || (res.statusCode === 201)) {
                         // Delete the file consent card
                         if (event.replyToId) {
                             session.connector.delete(addressOfSourceMessage, (err) => {
                                 if (err) {
-                                    winston.warn(`Failed to delete consent card: ${err.message}`, err);
+                                    winston.error(`Failed to delete consent card: ${err.message}`, err);
                                 }
                             });
                         }
@@ -241,9 +253,14 @@ export class OcrBot extends builder.UniversalBot {
                             },
                         };
                         session.send(new builder.Message(session).addAttachment(fileAttachment));
+                        utils.trackScenarioStop("ocr_send", { success: true, status: "sent" }, session.message);
                     } else {
-                        winston.error(`Error uploading file: statusCode:${res.statusCode}`, body);
-                        session.send(Strings.ocr_upload_error, res.statusMessage);
+                        let uploadError: any = new Error(res.statusMessage);
+                        uploadError.body = body;
+                        winston.error(`Error uploading file: statusCode:${res.statusCode}`, uploadError);
+
+                        session.send(Strings.ocr_upload_error, uploadError.message);
+                        utils.trackScenarioStop("ocr_send", { success: false, error: uploadError.message }, session.message);
                     }
                 });
                 break;

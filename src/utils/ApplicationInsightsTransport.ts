@@ -21,7 +21,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-let appInsights = require("applicationinsights");
+import * as appInsights  from "applicationinsights";
 import * as winston from "winston";
 
 enum SeverityLevel {

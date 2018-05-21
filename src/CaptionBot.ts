@@ -24,6 +24,7 @@
 import * as request from "request";
 import * as builder from "botbuilder";
 import * as msteams from "botbuilder-teams";
+import * as winston from "winston";
 import * as consts from "./constants";
 import * as utils from "./utils";
 import * as vision from "./VisionApi";
@@ -108,8 +109,10 @@ export class CaptionBot extends builder.UniversalBot {
             session.send(Strings.image_caption_response, describeResult.description.captions[0].text);
             utils.trackScenarioStop("caption", { success: true }, session.message);
         } catch (e) {
-            session.send(Strings.analysis_error, (e.result && e.result.message) || e.message);
-            utils.trackScenarioStop("caption", { success: false, error: e.message }, session.message);
+            const errorMessage = (e.result && e.result.message) || e.message;
+            winston.error(`Failed to analyze image: ${errorMessage}`, e);
+            session.send(Strings.analysis_error, errorMessage);
+            utils.trackScenarioStop("caption", { success: false, error: errorMessage }, session.message);
         }
     }
 }
