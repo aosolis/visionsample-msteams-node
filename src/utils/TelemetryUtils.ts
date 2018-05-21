@@ -62,9 +62,7 @@ export function trackEvent(eventName: string, properties: any = {}, botEvent?: b
             let address = botEvent.address;
             eventTelemetry.properties = {
                 correlationId: getCorrelationId(address),
-                user: address.user.id,
-                tenant: utils.getTenantId(botEvent),
-                sourceChannel: address.channelId,
+                bot: address.bot.id,
                 ...properties,
             };
 
@@ -95,7 +93,9 @@ export function trackException(error: Error, properties: any = {}, botEvent?: bu
             let address = botEvent.address;
             properties = {
                 correlationId: getCorrelationId(address),
+                bot: address.bot.id,
                 user: address.user.id,
+                userOid: (address.user as any).aadObjectId,
                 tenant: utils.getTenantId(botEvent),
                 ...properties,
             };

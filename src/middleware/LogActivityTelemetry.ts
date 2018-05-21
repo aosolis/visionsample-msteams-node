@@ -37,8 +37,12 @@ export class LogActivityTelemetry implements builder.IMiddlewareMap {
             type: event.type,
             activityId: address.id,
             bot: address.bot.id,
+            user: address.user.id,
+            userOid: (address.user as any).aadObjectId,
             conversation: address.conversation.id,
             conversationType: address.conversation.conversationType,
+            tenant: utils.getTenantId(event),
+            sourceChannel: address.channelId,
         };
 
         // Log team and channel id if available
