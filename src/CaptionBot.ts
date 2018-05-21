@@ -62,6 +62,7 @@ export class CaptionBot extends builder.UniversalBot {
         const fileAttachment = utils.getFirstFileAttachment(session.message);
         if (fileAttachment) {
             // Image was attached as a file
+            utils.trackScenarioStart("caption", { imageSource: "file" }, session.message);
             this.returnImageCaptionAsync(session, () => {
                 return this.visionApi.describeImageAsync(fileAttachment.downloadUrl);
             });
@@ -71,6 +72,7 @@ export class CaptionBot extends builder.UniversalBot {
         const inlineImageUrl = utils.getFirstInlineImageAttachmentUrl(session.message);
         if (inlineImageUrl) {
             // Image was attached as inline content
+            utils.trackScenarioStart("caption", { imageSource: "inline" }, session.message);
             this.returnImageCaptionAsync(session, async () => {
                 const buffer = await utils.getInlineAttachmentContentAsync(inlineImageUrl, session);
                 return await this.visionApi.describeImageAsync(buffer);
@@ -82,6 +84,7 @@ export class CaptionBot extends builder.UniversalBot {
             // Try the text as an image URL
             let urlMatch = session.message.text.match(consts.urlRegExp);
             if (urlMatch) {
+                utils.trackScenarioStart("caption", { imageSource: "url" }, session.message);
                 this.returnImageCaptionAsync(session, () => {
                     return this.visionApi.describeImageAsync(urlMatch[0]);
                 });
@@ -90,6 +93,7 @@ export class CaptionBot extends builder.UniversalBot {
         }
         
         // Send help message
+        utils.trackScenario("unrecognizedInput", {}, session.message);
         if (session.message.address.conversation.conversationType === "personal") {
             session.send(Strings.image_caption_help);
         } else {
@@ -102,8 +106,10 @@ export class CaptionBot extends builder.UniversalBot {
         try {
             const describeResult = await describeOperation();
             session.send(Strings.image_caption_response, describeResult.description.captions[0].text);
+            utils.trackScenarioStop("caption", { success: true }, session.message);
         } catch (e) {
             session.send(Strings.analysis_error, (e.result && e.result.message) || e.message);
+            utils.trackScenarioStop("caption", { success: false, error: e.message }, session.message);
         }
     }
 }

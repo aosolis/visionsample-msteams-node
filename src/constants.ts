@@ -36,6 +36,14 @@ export const DialogId = {
 export const TelemetryEvent = {
     UserActivity: "UserActivity",
     BotActivity: "BotActivity",
+    Scenario: "Scenario",
+};
+
+// Scenario steps
+// tslint:disable-next-line:variable-name
+export const ScenarioStep = {
+    Start: "start",
+    Stop: "stop",
 };
 
 export const urlRegExp = /https?:\/\/\S*/i;

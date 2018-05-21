@@ -25,6 +25,7 @@ let uuidV4 = require("uuid/v4");
 import * as appInsights from "applicationinsights";
 import * as builder from "botbuilder";
 import * as utils from "./MessageUtils";
+import * as consts from "../constants";
 
 // Ensures correlation id is present
 export function ensureCorrelationId(address: builder.IAddress): void {
@@ -95,4 +96,19 @@ export function trackException(error: Error, properties: any = {}, botEvent?: bu
         }
         client.trackException({ exception: error, properties: properties });
     }
+}
+
+// Log scenario to telemetry
+export function trackScenario(scenarioName: string, properties: any = {}, botEvent?: builder.IEvent): void {
+    this.trackEvent(consts.TelemetryEvent.Scenario, {...properties, scenario: scenarioName }, botEvent);
+}
+
+// Log scenario to telemetry
+export function trackScenarioStart(scenarioName: string, properties: any = {}, botEvent?: builder.IEvent): void {
+    this.trackEvent(consts.TelemetryEvent.Scenario, {...properties, scenario: scenarioName, step: consts.ScenarioStep.Start }, botEvent);
+}
+
+// Log scenario to telemetry
+export function trackScenarioStop(scenarioName: string, properties: any = {}, botEvent?: builder.IEvent): void {
+    this.trackEvent(consts.TelemetryEvent.Scenario, {...properties, scenario: scenarioName, step: consts.ScenarioStep.Stop }, botEvent);
 }
