@@ -108,6 +108,10 @@ export class OcrBot extends builder.UniversalBot {
 
         const eventAsAny = event as any;
         if (eventAsAny.name === "fileConsent/invoke") {
+            // Correlate with the previous event
+            const value = (event as any).value;
+            utils.setCorrelationId(event.address, value.context.correlationId);
+
             await this.handleFileConsentResponseAsync(event);
             callback(null, "", 200);
         } else {
@@ -147,9 +151,11 @@ export class OcrBot extends builder.UniversalBot {
                     sizeInBytes: buffer.byteLength,
                     acceptContext: {
                         resultId: resultId,
+                        correlationId: utils.getCorrelationId(session.message.address),
                     },
                     declineContext: {
                         resultId: resultId,
+                        correlationId: utils.getCorrelationId(session.message.address),
                     }
                 },
             };
@@ -163,7 +169,7 @@ export class OcrBot extends builder.UniversalBot {
     // Handle file consent response
     private async handleFileConsentResponseAsync(event: builder.IEvent): Promise<void> {
         const session = await utils.loadSessionAsync(this, event);
-        const ocrResult = session.conversationData.ocrResult;
+        const lastOcrResult = session.conversationData.ocrResult;
 
         // Create address of source message
         let addressOfSourceMessage: builder.IChatConnectorAddress = {
@@ -190,17 +196,18 @@ export class OcrBot extends builder.UniversalBot {
             case "accept":
                 const uploadInfo = value.uploadInfo;
 
+                // Send typing indicator while the file is uploaded
                 session.sendTyping();
                 session.sendBatch();
 
                 // Check that this is the active OCR result
-                if (!ocrResult || (ocrResult.resultId !== value.context.resultId)) {
+                if (!lastOcrResult || (lastOcrResult.resultId !== value.context.resultId)) {
                     session.send(Strings.ocr_result_expired);
                     return;
                 }
 
                 // Upload the content to the file
-                const buffer = new Buffer(ocrResult.text, "utf8");
+                const buffer = new Buffer(lastOcrResult.text, "utf8");
                 const options: request.OptionsWithUrl = {
                     url: uploadInfo.uploadUrl,
                     body: buffer,

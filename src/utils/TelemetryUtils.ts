@@ -26,14 +26,23 @@ import * as appInsights from "applicationinsights";
 import * as builder from "botbuilder";
 import * as utils from "./MessageUtils";
 
-// Add correlation id to address
-export function addCorrelationId(address: builder.IAddress): void {
-    (address as any).correlationId = uuidV4();
+// Ensures correlation id is present
+export function ensureCorrelationId(address: builder.IAddress): void {
+    const addressAsAny = address as any;
+    if (!addressAsAny.correlationId) {
+        setCorrelationId(address, uuidV4());
+    }
 }
 
 // Get correlation id from address
 export function getCorrelationId(address: builder.IAddress): string {
-    return (address as any).correlationId || "";
+    ensureCorrelationId(address);
+    return (address as any).correlationId;
+}
+
+// Set correlation id on address
+export function setCorrelationId(address: builder.IAddress, correlationId: string): void {
+    (address as any).correlationId = correlationId;
 }
 
 // Log event to telemetry

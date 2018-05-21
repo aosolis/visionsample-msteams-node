@@ -30,7 +30,7 @@ export class LogActivityTelemetry implements builder.IMiddlewareMap {
 
     // Log incoming activity telemetry
     public static logIncomingActivity(event: builder.IEvent): void {
-        utils.addCorrelationId(event.address);
+        utils.ensureCorrelationId(event.address);
 
         let address = event.address as builder.IChatConnectorAddress;
         let payload: any = {
@@ -38,7 +38,7 @@ export class LogActivityTelemetry implements builder.IMiddlewareMap {
             activityId: address.id,
             bot: address.bot.id,
             conversation: address.conversation.id,
-            isGroup: address.conversation.isGroup,
+            conversationType: address.conversation.conversationType,
         };
 
         // Log team and channel id if available
