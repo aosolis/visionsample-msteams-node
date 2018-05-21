@@ -8,6 +8,13 @@
         "That looks like %s.",
         "I have a feeling that's %s."
     ],
+    "image_nocaption_response": [
+        "¯\\_(ツ)_/¯",
+        "Hmm... You got me: I'm stumped!",
+        "I really have no idea what that was.",
+        "That was a little too abstract for me.",
+        "¯\\_(ツ)_/¯"
+    ],
     "image_caption_help": [ "Hi! Send me a picture or a link to one, and I'll tell you what it is." ],
     "image_caption_help_paste": [ "Hi! Send me a picture or a link to one, and I'll tell you what it is. In channels and group chats, please paste the picture directly into the compose box: Teams won't let me receive file attachments yet!" ],
     "analysis_error": "There was a problem analyzing the image: %s",

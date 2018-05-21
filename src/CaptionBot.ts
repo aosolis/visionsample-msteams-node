@@ -106,8 +106,15 @@ export class CaptionBot extends builder.UniversalBot {
     private async returnImageCaptionAsync(session: builder.Session, describeOperation: () => Promise<vision.DescribeImageResult>): Promise<void> {
         try {
             const describeResult = await describeOperation();
-            session.send(Strings.image_caption_response, describeResult.description.captions[0].text);
-            utils.trackScenarioStop("caption", { success: true }, session.message);
+            if (describeResult.description.captions.length) {
+                session.send(Strings.image_caption_response, describeResult.description.captions[0].text);
+                utils.trackScenarioStop("caption", { success: true, caption: true }, session.message);
+            } else {
+                session.send(new builder.Message(session)
+                    .text(Strings.image_nocaption_response)
+                    .textFormat("xml"));
+                utils.trackScenarioStop("caption", { success: true, caption: false }, session.message);
+            }
         } catch (e) {
             const errorMessage = (e.result && e.result.message) || e.message;
             winston.error(`Failed to analyze image: ${errorMessage}`, e);

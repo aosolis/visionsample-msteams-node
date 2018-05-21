@@ -7,6 +7,7 @@
 export const Strings = {
    "error_generic": "error_generic",
    "image_caption_response": "image_caption_response",
+   "image_nocaption_response": "image_nocaption_response",
    "image_caption_help": "image_caption_help",
    "image_caption_help_paste": "image_caption_help_paste",
    "analysis_error": "analysis_error",
