@@ -39,9 +39,8 @@
         "I didn't find any text in that picture.",
         "Hmm, that didn't seem to have any text.",
         "Sorry, did that contain any words?",
-        "Are you sure that had text in it?",
-        "Sorry, I couldn't make any sense of that one.",
-        "Sorry, that didn't make any sense to me."
+        "Hmm... are you sure that had text in it? I couldn't find any.",
+        "Sorry, I couldn't make out any words in that image."
     ],
     "ocr_file_upload_declined": "Ok! If you change your mind, just send me the picture again."
 }
