@@ -167,7 +167,9 @@ export class OcrBot extends builder.UniversalBot {
                 },
             };
 
-            session.send(Strings.ocr_textfound_message, langs.where("1", result.language).name || result.language);
+            const languageCode = result.language.split("-")[0];
+            const languageInfo = langs.where("1", languageCode);
+            session.send(Strings.ocr_textfound_message, (languageInfo && languageInfo.name) || result.language);
             session.send(new builder.Message(session).addAttachment(fileUploadRequest));
             utils.trackScenarioStart("ocr_send", {}, session.message);
         } else {
