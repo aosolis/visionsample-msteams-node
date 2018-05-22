@@ -60,9 +60,13 @@ export class CaptionBot extends builder.UniversalBot {
     private async _onMessage(session: builder.Session) {
         session.sendTyping();
 
+        // Caption Bot can take an image file in 3 ways:
+
+        // 1) File attachment -- a file picked from OneDrive or uploaded from the computer
         const fileAttachment = utils.getFirstFileAttachment(session.message);
         if (fileAttachment) {
-            // Image was attached as a file
+            // Image was sent as a file attachment
+            // downloadUrl is an unauthenticated URL to the file contents, valid for only a few minutes
             utils.trackScenarioStart("caption", { imageSource: "file" }, session.message);
             this.returnImageCaptionAsync(session, () => {
                 return this.visionApi.describeImageAsync(fileAttachment.downloadUrl);
@@ -70,9 +74,11 @@ export class CaptionBot extends builder.UniversalBot {
             return;
         }
         
+        // 2) Inline image attachment -- an image pasted into the compose box, or selected from the photo library on mobile
         const inlineImageUrl = utils.getFirstInlineImageAttachmentUrl(session.message);
         if (inlineImageUrl) {
-            // Image was attached as inline content
+            // Image was sent as inline content
+            // contentUrl is a url to the file content; the bot's bearer token is required 
             utils.trackScenarioStart("caption", { imageSource: "inline" }, session.message);
             this.returnImageCaptionAsync(session, async () => {
                 const buffer = await utils.getInlineAttachmentContentAsync(inlineImageUrl, session);
@@ -81,9 +87,10 @@ export class CaptionBot extends builder.UniversalBot {
             return;
         }
 
+        // 3) URL to an image sent in the text of the message
         if (session.message.text) {
             // Try the text as an image URL
-            let urlMatch = session.message.text.match(consts.urlRegExp);
+            const urlMatch = session.message.text.match(consts.urlRegExp);
             if (urlMatch) {
                 utils.trackScenarioStart("caption", { imageSource: "url" }, session.message);
                 this.returnImageCaptionAsync(session, () => {
@@ -93,7 +100,7 @@ export class CaptionBot extends builder.UniversalBot {
             }
         }
         
-        // Send help message
+        // If none of the above match, send a help message with usage instructions 
         utils.trackScenario("unrecognizedInput", {}, session.message);
         if (session.message.address.conversation.conversationType === "personal") {
             session.send(Strings.image_caption_help);

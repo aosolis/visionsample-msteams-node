@@ -62,9 +62,13 @@ export class OcrBot extends builder.UniversalBot {
     private async handleMessage(session: builder.Session) {
         session.sendTyping();
 
+        // OCR Bot can take an image file in 3 ways:
+
+        // 1) File attachment -- a file picked from OneDrive or uploaded from the computer
         const fileAttachment = utils.getFirstFileAttachment(session.message);
         if (fileAttachment) {
-            // Image was attached as a file
+            // Image was sent as a file attachment
+            // downloadUrl is an unauthenticated URL to the file contents, valid for only a few minutes
             utils.trackScenarioStart("ocr", { imageSource: "file" }, session.message);
             const resultFilename = fileAttachment.name + ".txt";
             this.returnRecognizedTextAsync(session, () => {
@@ -73,20 +77,23 @@ export class OcrBot extends builder.UniversalBot {
             return;
         }
         
+        // 2) Inline image attachment -- an image pasted into the compose box, or selected from the photo library on mobile
         const inlineImageUrl = utils.getFirstInlineImageAttachmentUrl(session.message);
         if (inlineImageUrl) {
-            // Image was attached as inline content
+            // Image was sent as inline content
+            // contentUrl is a url to the file content; the bot's bearer token is required 
             utils.trackScenarioStart("ocr", { imageSource: "inline" }, session.message);
             this.returnRecognizedTextAsync(session, async () => {
-                let buffer = await utils.getInlineAttachmentContentAsync(inlineImageUrl, session);
+                const buffer = await utils.getInlineAttachmentContentAsync(inlineImageUrl, session);
                 return await this.visionApi.runOcrAsync(buffer);
             });
             return;
         }
 
+        // 3) URL to an image sent in the text of the message
         if (session.message.text) {
             // Try the text as an image URL
-            let urlMatch = session.message.text.match(consts.urlRegExp);
+            const urlMatch = session.message.text.match(consts.urlRegExp);
             if (urlMatch) {
                 utils.trackScenarioStart("ocr", { imageSource: "url" }, session.message);
                 this.returnRecognizedTextAsync(session, () => {
@@ -96,7 +103,7 @@ export class OcrBot extends builder.UniversalBot {
             }
         }
         
-        // Send help message
+        // If none of the above match, send a help message with usage instructions 
         utils.trackScenarioStart("unrecognizedInput", {}, session.message);
         if (session.message.address.conversation.conversationType === "personal") {
             session.send(Strings.ocr_help);
@@ -105,7 +112,7 @@ export class OcrBot extends builder.UniversalBot {
         }
     }
 
-    // Handle incoming invokes
+    // Handle incoming invoke activities
     private async handleInvoke(event: builder.IEvent, callback: (err: Error, body: any, status?: number) => void): Promise<void> {
         // Invokes don't go through middleware, so we have to log them specifically
         LogActivityTelemetry.logIncomingActivity(event);
@@ -123,7 +130,7 @@ export class OcrBot extends builder.UniversalBot {
         }
     }
 
-    // Return text recognized in the image
+    // Return the result of running OCR on the image
     private async returnRecognizedTextAsync(session: builder.Session, ocrOperation: () => Promise<vision.OcrResult>, filename?: string): Promise<void> {
         try {
             const ocrResult = await ocrOperation();
@@ -139,23 +146,34 @@ export class OcrBot extends builder.UniversalBot {
 
     // Send the OCR response to the user
     private sendOcrResponse(session: builder.Session, result: vision.OcrResult, filename?: string): void {
-        let text = this.getRecognizedText(result);
-
+        const text = this.getRecognizedText(result);
         if (text.length > 0)
         {
-            let resultId = uuidv4();
+            // Text was found in the message. Send it back to the user as a file.
+
+            // Save the OCR result in conversationData, while we wait for the user's consent to upload the file.
+            const resultId = uuidv4();
             session.conversationData.ocrResult = {
                 resultId: resultId,
                 text: text,
             };
     
+            // Calculate the file size in bytes. Note that this only needs to be approximate (upper bound), 
+            // so it's expensive to determine the file size, you don't need to do that.
+            // In this case it's straightforward to get the actual size, so we might as well. 
             const buffer = new Buffer(text, "utf8");
-            let fileUploadRequest: builder.IAttachment = {
+            const fileSizeInBytes = buffer.byteLength;
+
+            // Build the file upload consent card
+            // Accept and decline context contain: 
+            //   1) the result id, to detect the case where the user acted on a stale card
+            //   2) a correlation id, so we can correlate the user's response back to this upload consent request.
+            const fileUploadRequest: builder.IAttachment = {
                 contentType: "application/vnd.microsoft.teams.card.file.consent",
                 name: filename || session.gettext(Strings.ocr_file_name),
                 content: {
                     description: session.gettext(Strings.ocr_file_description),
-                    sizeInBytes: buffer.byteLength,
+                    sizeInBytes: fileSizeInBytes,
                     acceptContext: {
                         resultId: resultId,
                         correlationId: utils.getCorrelationId(session.message.address),
@@ -167,8 +185,13 @@ export class OcrBot extends builder.UniversalBot {
                 },
             };
 
+            // Try to convert the language code (e.g., "en", "zh-Hans") from the vision API to a human-readable language name
             const languageCode = result.language.split("-")[0];
             const languageInfo = langs.where("1", languageCode);
+            const languageName = (languageInfo && languageInfo.name) || result.language;
+
+            // Send the text prompt and the file consent card.
+            // We send them in 2 separate activities, to be sure that we can safely delete the file consent card alone.
             session.send(Strings.ocr_textfound_message, (languageInfo && languageInfo.name) || result.language);
             session.send(new builder.Message(session).addAttachment(fileUploadRequest));
             utils.trackScenarioStart("ocr_send", {}, session.message);
@@ -183,7 +206,7 @@ export class OcrBot extends builder.UniversalBot {
         const lastOcrResult = session.conversationData.ocrResult;
 
         // Create address of source message
-        let addressOfSourceMessage: builder.IChatConnectorAddress = {
+        const addressOfSourceMessage: builder.IChatConnectorAddress = {
             ...event.address,
             id: event.replyToId,
         };
@@ -208,18 +231,19 @@ export class OcrBot extends builder.UniversalBot {
             case "accept":
                 const uploadInfo = value.uploadInfo;
 
-                // Send typing indicator while the file is uploaded
+                // Send typing indicator while the file is uploading
                 session.sendTyping();
                 session.sendBatch();
 
-                // Check that this is the active OCR result
+                // Check that this response is for the the current OCR result
                 if (!lastOcrResult || (lastOcrResult.resultId !== value.context.resultId)) {
                     session.send(Strings.ocr_result_expired);
                     utils.trackScenarioStop("ocr_send", { success: true, status: "expired" }, session.message);
                     return;
                 }
 
-                // Upload the content to the file
+                // Upload the file contents to the upload session we got from the invoke value
+                // See https://docs.microsoft.com/en-us/onedrive/developer/rest-api/api/driveitem_createuploadsession#upload-bytes-to-the-upload-session
                 const buffer = new Buffer(lastOcrResult.text, "utf8");
                 const options: request.OptionsWithUrl = {
                     url: uploadInfo.uploadUrl,
@@ -245,6 +269,7 @@ export class OcrBot extends builder.UniversalBot {
                         }
 
                         // Send message with link to the file
+                        // The fields in the file info attachment are populated from the information in the incoming invoke.
                         const fileAttachment = {
                             contentType: "application/vnd.microsoft.teams.card.file.info",
                             contentUrl: uploadInfo.contentUrl,
@@ -257,7 +282,7 @@ export class OcrBot extends builder.UniversalBot {
                         session.send(new builder.Message(session).addAttachment(fileAttachment));
                         utils.trackScenarioStop("ocr_send", { success: true, status: "sent" }, session.message);
                     } else {
-                        let uploadError: any = new Error(res.statusMessage);
+                        const uploadError: any = new Error(res.statusMessage);
                         uploadError.body = body;
                         winston.error(`Error uploading file: statusCode:${res.statusCode}`, uploadError);
 

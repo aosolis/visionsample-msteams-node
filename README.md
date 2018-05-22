@@ -2,7 +2,7 @@
 
 This sample demonstrates how a bot can send and receive files in Microsoft Teams.
 
-It consists of two bots:
+It has two bots:
 * **Caption Bot** returns a description of pictures sent to it using the [Azure Computer Vison API](https://docs.microsoft.com/en-us/azure/cognitive-services/Computer-vision/Home#generating-descriptions).
 * **OCR Bot** finds text in images that it receives using the [Azure Computer Vision API](https://docs.microsoft.com/en-us/azure/cognitive-services/Computer-vision/Home#optical-character-recognition-ocr). It then sends the user a file containing the text that it recognized.
 
