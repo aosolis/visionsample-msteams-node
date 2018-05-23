@@ -25,6 +25,7 @@ import * as request from "request";
 import * as builder from "botbuilder";
 import * as msteams from "botbuilder-teams";
 import * as winston from "winston";
+import * as builderExt from "./botbuilder-extensions";
 import * as consts from "./constants";
 import * as utils from "./utils";
 import * as vision from "./VisionApi";
@@ -63,13 +64,13 @@ export class CaptionBot extends builder.UniversalBot {
         // Caption Bot can take an image file in 3 ways:
 
         // 1) File attachment -- a file picked from OneDrive or uploaded from the computer
-        const fileAttachment = utils.getFirstFileAttachment(session.message);
-        if (fileAttachment) {
+        const fileAttachments = builderExt.FileDownloadInfo.filter(session.message.attachments);
+        if (fileAttachments && (fileAttachments.length > 0)) {
             // Image was sent as a file attachment
             // downloadUrl is an unauthenticated URL to the file contents, valid for only a few minutes
             utils.trackScenarioStart("caption", { imageSource: "file" }, session.message);
             this.returnImageCaptionAsync(session, () => {
-                return this.visionApi.describeImageAsync(fileAttachment.downloadUrl);
+                return this.visionApi.describeImageAsync(fileAttachments[0].content.downloadUrl);
             });
             return;
         }

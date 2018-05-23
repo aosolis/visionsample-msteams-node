@@ -28,6 +28,7 @@ import * as langs from "langs";
 import * as builder from "botbuilder";
 import * as consts from "./constants";
 import * as utils from "./utils";
+import * as builderExt from "./botbuilder-extensions";
 import * as vision from "./VisionApi";
 import { Strings } from "./locale/locale";
 import { LogActivityTelemetry } from "./middleware/LogActivityTelemetry";
@@ -65,14 +66,14 @@ export class OcrBot extends builder.UniversalBot {
         // OCR Bot can take an image file in 3 ways:
 
         // 1) File attachment -- a file picked from OneDrive or uploaded from the computer
-        const fileAttachment = utils.getFirstFileAttachment(session.message);
-        if (fileAttachment) {
+        const fileAttachments = builderExt.FileDownloadInfo.filter(session.message.attachments);
+        if (fileAttachments && (fileAttachments.length > 0)) {
             // Image was sent as a file attachment
             // downloadUrl is an unauthenticated URL to the file contents, valid for only a few minutes
             utils.trackScenarioStart("ocr", { imageSource: "file" }, session.message);
-            const resultFilename = fileAttachment.name + ".txt";
+            const resultFilename = fileAttachments[0].name + ".txt";
             this.returnRecognizedTextAsync(session, () => {
-                return this.visionApi.runOcrAsync(fileAttachment.downloadUrl);
+                return this.visionApi.runOcrAsync(fileAttachments[0].content.downloadUrl);
             }, resultFilename);
             return;
         }
@@ -118,7 +119,7 @@ export class OcrBot extends builder.UniversalBot {
         LogActivityTelemetry.logIncomingActivity(event);
 
         const eventAsAny = event as any;
-        if (eventAsAny.name === "fileConsent/invoke") {
+        if (eventAsAny.name === builderExt.fileConsentInvokeName) {
             // Correlate with the previous event
             const value = (event as any).value;
             utils.setCorrelationId(event.address, value.context.correlationId);
@@ -168,22 +169,14 @@ export class OcrBot extends builder.UniversalBot {
             // Accept and decline context contain: 
             //   1) the result id, to detect the case where the user acted on a stale card
             //   2) a correlation id, so we can correlate the user's response back to this upload consent request.
-            const fileUploadRequest: builder.IAttachment = {
-                contentType: "application/vnd.microsoft.teams.card.file.consent",
-                name: filename || session.gettext(Strings.ocr_file_name),
-                content: {
-                    description: session.gettext(Strings.ocr_file_description),
-                    sizeInBytes: fileSizeInBytes,
-                    acceptContext: {
-                        resultId: resultId,
-                        correlationId: utils.getCorrelationId(session.message.address),
-                    },
-                    declineContext: {
-                        resultId: resultId,
-                        correlationId: utils.getCorrelationId(session.message.address),
-                    }
-                },
-            };
+            const fileConsentCard = new builderExt.FileConsentCard(session)
+                .name(filename || session.gettext(Strings.ocr_file_name))
+                .description(Strings.ocr_file_description)
+                .sizeInBytes(fileSizeInBytes)
+                .context({
+                    resultId: resultId,
+                    correlationId: utils.getCorrelationId(session.message.address),
+                });
 
             // Try to convert the language code (e.g., "en", "zh-Hans") from the vision API to a human-readable language name
             const languageCode = result.language.split("-")[0];
@@ -193,7 +186,7 @@ export class OcrBot extends builder.UniversalBot {
             // Send the text prompt and the file consent card.
             // We send them in 2 separate activities, to be sure that we can safely delete the file consent card alone.
             session.send(Strings.ocr_textfound_message, (languageInfo && languageInfo.name) || result.language);
-            session.send(new builder.Message(session).addAttachment(fileUploadRequest));
+            session.send(new builder.Message(session).addAttachment(fileConsentCard));
             utils.trackScenarioStart("ocr_send", {}, session.message);
         } else {
             session.send(Strings.ocr_notextfound_message);
@@ -211,10 +204,10 @@ export class OcrBot extends builder.UniversalBot {
             id: event.replyToId,
         };
 
-        const value = (event as any).value;
+        const value = (event as any).value as builderExt.IFileConsentCardResponse;
         switch (value.action) {
             // User declined upload
-            case "decline":
+            case builderExt.FileConsentCardAction.decline:
                 // Delete the file consent card
                 if (event.replyToId) {
                     session.connector.delete(addressOfSourceMessage, (err) => {
@@ -228,7 +221,7 @@ export class OcrBot extends builder.UniversalBot {
                 break;
 
             // User accepted file
-            case "accept":
+            case builderExt.FileConsentCardAction.accept:
                 const uploadInfo = value.uploadInfo;
 
                 // Send typing indicator while the file is uploading
@@ -268,18 +261,10 @@ export class OcrBot extends builder.UniversalBot {
                             });
                         }
 
-                        // Send message with link to the file
-                        // The fields in the file info attachment are populated from the information in the incoming invoke.
-                        const fileAttachment = {
-                            contentType: "application/vnd.microsoft.teams.card.file.info",
-                            contentUrl: uploadInfo.contentUrl,
-                            name: uploadInfo.name,
-                            content: {
-                                uniqueId: uploadInfo.uniqueId,
-                                fileType: uploadInfo.fileType,
-                            },
-                        };
-                        session.send(new builder.Message(session).addAttachment(fileAttachment));
+                        // Send message with link to the file.
+                        // The fields in the file info card are populated from the upload info we got in the incoming invoke.
+                        const fileInfoCard = builderExt.FileInfoCard.fromFileUploadInfo(uploadInfo);
+                        session.send(new builder.Message(session).addAttachment(fileInfoCard));
                         utils.trackScenarioStop("ocr_send", { success: true, status: "sent" }, session.message);
                     } else {
                         const uploadError: any = new Error(res.statusMessage);
