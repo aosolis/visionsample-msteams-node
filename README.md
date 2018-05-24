@@ -1,4 +1,4 @@
-# visionsample-msteams
+# visionsample-msteams-node
 
 This sample demonstrates how a bot can send and receive files in Microsoft Teams.
 
