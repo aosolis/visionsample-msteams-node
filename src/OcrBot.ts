@@ -82,7 +82,7 @@ export class OcrBot extends builder.UniversalBot {
         const inlineImageUrl = utils.getFirstInlineImageAttachmentUrl(session.message);
         if (inlineImageUrl) {
             // Image was sent as inline content
-            // contentUrl is a url to the file content; the bot's bearer token is required 
+            // contentUrl is a url to the file content; the bot's access token is required 
             utils.trackScenarioStart("ocr", { imageSource: "inline" }, session.message);
             this.returnRecognizedTextAsync(session, async () => {
                 const buffer = await utils.getInlineAttachmentContentAsync(inlineImageUrl, session);
@@ -160,7 +160,7 @@ export class OcrBot extends builder.UniversalBot {
             };
     
             // Calculate the file size in bytes. Note that this only needs to be approximate (upper bound), 
-            // so it's expensive to determine the file size, you don't need to do that.
+            // so if it's expensive to determine the file size, you don't need to do that.
             // In this case it's straightforward to get the actual size, so we might as well. 
             const buffer = new Buffer(text, "utf8");
             const fileSizeInBytes = buffer.byteLength;

@@ -79,7 +79,7 @@ export class CaptionBot extends builder.UniversalBot {
         const inlineImageUrl = utils.getFirstInlineImageAttachmentUrl(session.message);
         if (inlineImageUrl) {
             // Image was sent as inline content
-            // contentUrl is a url to the file content; the bot's bearer token is required 
+            // contentUrl is a url to the file content; the bot's access token is required 
             utils.trackScenarioStart("caption", { imageSource: "inline" }, session.message);
             this.returnImageCaptionAsync(session, async () => {
                 const buffer = await utils.getInlineAttachmentContentAsync(inlineImageUrl, session);

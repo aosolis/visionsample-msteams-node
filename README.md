@@ -6,6 +6,26 @@ It has two bots:
 * **Caption Bot** returns a description of pictures sent to it using the [Azure Computer Vison API](https://docs.microsoft.com/en-us/azure/cognitive-services/Computer-vision/Home#generating-descriptions).
 * **OCR Bot** finds text in images that it receives using the [Azure Computer Vision API](https://docs.microsoft.com/en-us/azure/cognitive-services/Computer-vision/Home#optical-character-recognition-ocr). It then sends the user a file containing the text that it recognized.
 
+## Getting started
+Create a `.vscode` folder in the root directory of your project, and copy `launch.json` into it.
+
+Follow the instructions in the [Microsoft Teams Sample (Node.JS)](https://github.com/OfficeDev/microsoft-teams-sample-complete-node), under [Steps to see the full app in Microsoft Teams](https://github.com/OfficeDev/microsoft-teams-sample-complete-node#steps-to-see-the-full-app-in-microsoft-teams), to:
+1. Set up a tunneling service such as [ngrok](https://ngrok.com/).
+2. Register a bot in [Microsoft Bot Framework](https://dev.botframework.com/).
+
+This project contains 2 bots. Depending on which one you want to run, set the corresponding messaging endpoint in the Bot Framework portal, and the right variables in `launch.json`. (You can also register two bots and run both simulataneously.)
+| Property | Caption Bot | OCR Bot |
+|---|---|---|---|
+| Messaging endpoint | `https://xxxx.ngrok.io/caption/messages` | `https://xxxx.ngrok.io/ocr/messages` |
+| App ID | Set `CAPTION_MICROSOFT_APP_ID` | Set `OCR_MICROSOFT_APP_ID` |
+| App password | Set `CAPTION_MICROSOFT_APP_PASSWORD` | Set `OCR_MICROSOFT_APP_PASSWORD` |
+
+[Get an API key](https://azure.microsoft.com/en-us/try/cognitive-services/?api=computer-vision) for the Azure Computer Vision API, and set the following values in `launch.json`.
+* `VISION_ENDPOINT` = hostname of the Vision API endpoint, e.g., `westus.api.cognitive.microsoft.com`. Note that this depends on where you created your API key.
+* `VISION_ACCESS_KEY` = access key for the Vision API
+
+Run `npm install`, followed by `gulp build`. Then run the project in Visual Studio Code.  
+
 ## Receiving files
 A user can send files to a bot in two ways:
 
@@ -132,7 +152,7 @@ We recommend sending a link to the uploaded file. You can send a direct link, us
 * The other fields are taken from the `uploadInfo` value received with the `fileConsent/invoke` message.
 
 #### 4) Delete or update the message with the file consent card
-After the use has acted on a file consent card, we recommend deleting or updating the message with the file consent card. This keeps the user from clicking "Accept" or "Decline" again.
+After the user has acted on a file consent card, we recommend deleting or updating the message with the file consent card. This keeps the user from clicking "Accept" or "Decline" again.
 
 The activity id of the message with the consent card is in the `replyToId` of the `fileConsent/invoke` message. You can use the corresponding APIs to delete or update the message. (**Note**: The `replyToId` field is currently empty; a fix has been submitted and will be rolling out to Developer Preview soon.)
 
