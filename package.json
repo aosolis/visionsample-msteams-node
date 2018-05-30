@@ -1,6 +1,6 @@
 {
   "name": "visionsample-msteams",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Sample bots that exercise bot file APIs in Microsoft Teams",
   "author": {
     "name": "Adrian Solis"
@@ -18,7 +18,7 @@
     "applicationinsights": "^1.0.2",
     "body-parser": "^1.16.1",
     "botbuilder": "^3.15.0",
-    "botbuilder-teams": "^0.1.7",
+    "botbuilder-teams": "^0.2.1",
     "config": "^1.25.1",
     "express": "~4.13.1",
     "langs": "^2.0.0",

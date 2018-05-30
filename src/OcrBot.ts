@@ -26,9 +26,9 @@ import * as request from "request";
 import * as winston from "winston";
 import * as langs from "langs";
 import * as builder from "botbuilder";
+import * as msteams from "botbuilder-teams";
 import * as consts from "./constants";
 import * as utils from "./utils";
-import * as builderExt from "./botbuilder-extensions";
 import * as vision from "./VisionApi";
 import { Strings } from "./locale/locale";
 import { LogActivityTelemetry } from "./middleware/LogActivityTelemetry";
@@ -66,7 +66,7 @@ export class OcrBot extends builder.UniversalBot {
         // OCR Bot can take an image file in 3 ways:
 
         // 1) File attachment -- a file picked from OneDrive or uploaded from the computer
-        const fileAttachments = builderExt.FileDownloadInfo.filter(session.message.attachments);
+        const fileAttachments = msteams.FileDownloadInfo.filter(session.message.attachments);
         if (fileAttachments && (fileAttachments.length > 0)) {
             // Image was sent as a file attachment
             // downloadUrl is an unauthenticated URL to the file contents, valid for only a few minutes
@@ -119,7 +119,7 @@ export class OcrBot extends builder.UniversalBot {
         LogActivityTelemetry.logIncomingActivity(event);
 
         const eventAsAny = event as any;
-        if (eventAsAny.name === builderExt.fileConsentInvokeName) {
+        if (eventAsAny.name === msteams.fileConsentInvokeName) {
             // Correlate with the previous event
             const value = (event as any).value;
             utils.setCorrelationId(event.address, value.context.correlationId);
@@ -169,7 +169,7 @@ export class OcrBot extends builder.UniversalBot {
             // Accept and decline context contain: 
             //   1) the result id, to detect the case where the user acted on a stale card
             //   2) a correlation id, so we can correlate the user's response back to this upload consent request.
-            const fileConsentCard = new builderExt.FileConsentCard(session)
+            const fileConsentCard = new msteams.FileConsentCard(session)
                 .name(filename || session.gettext(Strings.ocr_file_name))
                 .description(Strings.ocr_file_description)
                 .sizeInBytes(fileSizeInBytes)
@@ -204,10 +204,10 @@ export class OcrBot extends builder.UniversalBot {
             id: event.replyToId,
         };
 
-        const value = (event as any).value as builderExt.IFileConsentCardResponse;
+        const value = (event as any).value as msteams.IFileConsentCardResponse;
         switch (value.action) {
             // User declined upload
-            case builderExt.FileConsentCardAction.decline:
+            case msteams.FileConsentCardAction.decline:
                 // Delete the file consent card
                 if (event.replyToId) {
                     session.connector.delete(addressOfSourceMessage, (err) => {
@@ -221,7 +221,7 @@ export class OcrBot extends builder.UniversalBot {
                 break;
 
             // User accepted file
-            case builderExt.FileConsentCardAction.accept:
+            case msteams.FileConsentCardAction.accept:
                 const uploadInfo = value.uploadInfo;
 
                 // Send typing indicator while the file is uploading
@@ -263,7 +263,7 @@ export class OcrBot extends builder.UniversalBot {
 
                         // Send message with link to the file.
                         // The fields in the file info card are populated from the upload info we got in the incoming invoke.
-                        const fileInfoCard = builderExt.FileInfoCard.fromFileUploadInfo(uploadInfo);
+                        const fileInfoCard = msteams.FileInfoCard.fromFileUploadInfo(uploadInfo);
                         session.send(new builder.Message(session).addAttachment(fileInfoCard));
                         utils.trackScenarioStop("ocr_send", { success: true, status: "sent" }, session.message);
                     } else {
