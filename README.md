@@ -13,9 +13,10 @@ Follow the instructions in the [Microsoft Teams Sample (Node.JS)](https://github
 1. Set up a tunneling service such as [ngrok](https://ngrok.com/).
 2. Register a bot in [Microsoft Bot Framework](https://dev.botframework.com/).
 
-This project contains 2 bots. Depending on which one you want to run, set the corresponding messaging endpoint in the Bot Framework portal, and the right variables in `launch.json`. (You can also register two bots and run both simulataneously.)
+This project contains 2 bots. Depending on which one you want to run, set the corresponding messaging endpoint in the Bot Framework portal, and the right variables in `launch.json`. (You can also register two bots and run both simultaneously.)
+
 | Property | Caption Bot | OCR Bot |
-|---|---|---|---|
+|---|---|---|
 | Messaging endpoint | `https://xxxx.ngrok.io/caption/messages` | `https://xxxx.ngrok.io/ocr/messages` |
 | App ID | Set `CAPTION_MICROSOFT_APP_ID` | Set `OCR_MICROSOFT_APP_ID` |
 | App password | Set `CAPTION_MICROSOFT_APP_PASSWORD` | Set `OCR_MICROSOFT_APP_PASSWORD` |
