@@ -1,6 +1,6 @@
 ﻿{
-  "$schema": "https://statics.teams.microsoft.com/sdk/v1.2/manifest/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.2",
+  "$schema": "https://statics.teams.microsoft.com/sdk/v1.3.0-beta.2/manifest/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.3",
   "version": "1.0",
   "id": "5bef59e3-026a-429c-8161-b197313014d1",
   "packageName": "com.microsoft.aosolis.ocrbot",
@@ -29,6 +29,7 @@
   "bots": [
     {
       "botId": "5bef59e3-026a-429c-8161-b197313014d1",
+      "supportsFiles": true,
       "scopes": [
         "personal"
       ]

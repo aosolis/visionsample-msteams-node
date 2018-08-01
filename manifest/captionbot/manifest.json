@@ -1,6 +1,6 @@
 ﻿{
-  "$schema": "https://statics.teams.microsoft.com/sdk/v1.2/manifest/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.2",
+  "$schema": "https://statics.teams.microsoft.com/sdk/v1.3.0-beta.2/manifest/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.3",
   "version": "1.0",
   "id": "45be6940-7ca9-4bdc-9e7f-188e71791c69",
   "packageName": "com.microsoft.aosolis.captionbot",
@@ -29,6 +29,7 @@
   "bots": [
     {
       "botId": "45be6940-7ca9-4bdc-9e7f-188e71791c69",
+      "supportsFiles": true,
       "scopes": [
         "personal",
         "team"
